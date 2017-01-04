@@ -1,0 +1,65 @@
+# Specific Folders #
+####################
+
+# Specific Compiled sources that we want to send to repository #
+################################################################
+!bin/readme.md
+
+# DIA Files #
+#############
+*.dia~
+*.dia.autosave
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+*.pem
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# USER CONFIG #
+###############
+*.codekit
+*.pro.user
+*.pro.user.*
+*.stash
+*.autosave
+
+# Logs and databases #
+######################
+*.log
+*.sqlite
+*.db
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Icon*
+
+# MATLAB FILES #
+################
+*.m~
+*.mat
