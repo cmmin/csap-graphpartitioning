@@ -55,4 +55,4 @@ class CLibrary:
         return True
 
     def _libExtensions(self):
-        return [".dll", ".so", ".a"]
+        return [".dll", ".so", ".a", ".dylib"]
