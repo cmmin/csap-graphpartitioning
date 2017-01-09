@@ -8,9 +8,9 @@ def checkFileExists(path):
             return True
     return False
 
-def checkFileExtensionValid(path, extensions = []):
+def checkFileExtensionValid(path, validExtensionsList):
     ''' Checks if the path string ends with the right extension'''
-    for ext in extensions:
-        if(path.endswith(ext)):
+    for extension in validExtensionsList:
+        if(path.endswith(extension)):
             return True
     return False
