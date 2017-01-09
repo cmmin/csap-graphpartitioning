@@ -17,7 +17,7 @@ class TestCLibraryLoader(unittest.TestCase):
         # TODO test for specific exceptions
 
     def test_load(self):
-        validLibPath = "../../tools/scotch/lib/macOS/libscotch.so"
+        validLibPath = "../../tools/scotch/lib/macOS/libscotch.dylib"
         invalidLibPaths = ["../tools/scotch/lib/macOS/libscotch.dll", ""]
 
         lib = libloader.CLibrary()
@@ -31,11 +31,11 @@ class TestCLibraryLoader(unittest.TestCase):
         lib = libloader.CLibrary()
 
         self.assertTrue(lib.library == None)
-        self.assertTrue(len(self.libraryPath) = 0)
+        self.assertTrue(len(lib.libraryPath) == 0)
         self.assertFalse(lib.isLoaded())
 
         with self.assertRaises(Exception) as context:
-            lib.load()
+            lib._loadLibrary()
 
     def test__libExtensions(self):
         lib = libloader.CLibrary()

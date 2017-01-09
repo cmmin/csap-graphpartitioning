@@ -29,8 +29,8 @@ LINE 3: baseval numeric_flag
 
 class LibScotch:
     def __init__(self, libraryPath):
-        self.scotch = CLibrary(libraryPath)
-        self.scotch.load()
+        self.clib = CLibrary(libraryPath)
+        self.clib.load()
 
         # *****************
         # structures & data
@@ -45,36 +45,35 @@ class LibScotch:
         # *******
 
         # Scotch::version()
-        self.SCOTCH_version = self.scotch.library.SCOTCH_version
+        self.SCOTCH_version = self.clib.library.SCOTCH_version
         self.SCOTCH_version.argtypes = [POINTER(c_int), POINTER(c_int), POINTER(c_int)]
 
         # SCOTCH_archInit
-        self.SCOTCH_archInit = self.scotch.library.SCOTCH_archInit
+        self.SCOTCH_archInit = self.clib.library.SCOTCH_archInit
         self.SCOTCH_archInit.argtypes = [POINTER(self.SCOTCH_Arch)]
 
         # SCOTCH_archExit
-        self.SCOTCH_archExit = self.scotch.library.SCOTCH_archExit
+        self.SCOTCH_archExit = self.clib.library.SCOTCH_archExit
         self.SCOTCH_archExit.argtypes = [POINTER(self.SCOTCH_Arch)]
 
         # SCOTCH_graphInit
-        self.SCOTCH_graphInit = self.scotch.library.SCOTCH_graphInit
+        self.SCOTCH_graphInit = self.clib.library.SCOTCH_graphInit
         self.SCOTCH_graphInit.argtypes = [POINTER(self.SCOTCH_Graph)]
 
         # SCOTCH_graphExit
-        self.SCOTCH_graphExit = self.scotch.library.SCOTCH_graphExit
+        self.SCOTCH_graphExit = self.clib.library.SCOTCH_graphExit
         self.SCOTCH_graphExit.argtypes = [POINTER(self.SCOTCH_Graph)]
 
         # SCOTCH_graphBuild
-        self.SCOTCH_graphBuild = self.scotch.library.SCOTCH_graphBuild
+        self.SCOTCH_graphBuild = self.clib.library.SCOTCH_graphBuild
         self.SCOTCH_graphBuild.argtypes = [
             POINTER(self.SCOTCH_Graph), c_int, c_int,
             c_void_p, c_void_p, c_void_p, c_void_p,
             c_int, c_void_p, c_void_p
         ]
 
-
-    def isLoaded():
-        return self.scotch.isLoaded()
+    def isLoaded(self):
+        return self.clib.isLoaded()
 
     def version(self):
         major_ptr = c_int(0)

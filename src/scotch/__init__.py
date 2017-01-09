@@ -1,1 +1,1 @@
-from scotch import LibScotch
+from .scotch import LibScotch

@@ -23,7 +23,8 @@ class CLibrary:
             print("Failed to load library:", str(e))
 
     def _loadLibrary(self):
-        self.setLibraryPath(self.libraryPath)
+        if(self.setLibraryPath(self.libraryPath) == False):
+            raise exceptions.LibraryLoadException("Failed to set path during loadLibrary")
         self.library = cdll.LoadLibrary(self.libraryPath)
 
     def setLibraryPath(self, newLibraryPath):
