@@ -1,6 +1,12 @@
 # Specific Folders #
 ####################
 
+# Specific Files #
+##################
+
+src/CAlgPrototypes/test
+src/CAlgPrototypes/scotch
+
 # Specific Compiled sources that we want to send to repository #
 ################################################################
 !bin/readme.md
