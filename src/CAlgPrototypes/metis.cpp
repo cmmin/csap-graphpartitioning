@@ -21,7 +21,7 @@ namespace METIS {
     }
     this->weight = weight;
 
-    std::cout << "Created Edge: " << this->u << " " << this->v << std::endl;
+    //std::cout << "Created Edge: " << this->u << " " << this->v << std::endl;
   }
 
   std::pair<int, int> MetisEdge::getPair() {
@@ -57,6 +57,10 @@ namespace METIS {
       return true;
     }
     return false;
+  }
+
+  int MetisVertex::numEdges() {
+    return this->edges.size();
   }
 
 
@@ -210,6 +214,41 @@ namespace METIS {
   int MetisGraph::numEdges() {
     return this->uniqueEdges.size();
   }
+
+
+  void MetisGraph::computeArrays() {
+
+      // populate vertices & edges
+      this->verttab = new int[this->numVertices() + 1];
+      this->edgetab = new int[this->numEdges() * 2];
+
+      this->edlotab = new int[this->numEdges() * 2];
+      this->velotab = new int[this->numVertices()];
+
+      int vtabID = 0;
+      std::map<int, MetisVertex *>::iterator it;
+      for(it = this->vertices.begin(); it != this->vertices.end(); it++) {
+        this->verttab[it->first - 1] = vtabID;
+        this->velotab[it->first - 1] = 1; // TODO vertex weights
+        // populate edges
+        int count = 0;
+        std::map <std::pair<int, int>, MetisEdge *>::iterator eit;
+        for(eit = it->second->edges.begin(); eit != it->second->edges.end(); eit++) {
+          int otherID = eit->second->getOtherVertex(it->first);
+
+          this->edgetab[vtabID + count] = otherID - 1;
+          this->edlotab[vtabID + count] = eit->second->weight;
+
+          count++;
+        }
+        // update vtabID
+        vtabID += it->second->numEdges();
+      }
+      this->verttab[this->numVertices()] = vtabID;
+
+
+  }
+
 
 MetisGraph *loadGraphFromFile(std::string path) {
   std::ifstream infile(path);

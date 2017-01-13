@@ -41,6 +41,19 @@ namespace METIS {
 
     MetisEdge(int u, int v, int weight = 1);
     std::pair<int, int> getPair();
+
+    int getOtherVertex(int vertID) {
+      if(vertID == this->u) {
+        return this->v;
+      }
+      else if(vertID == this->v) {
+        return this->u;
+      }
+      else {
+        return -1;
+      }
+    }
+
   };
 
   struct MetisVertex {
@@ -52,6 +65,7 @@ namespace METIS {
     MetisVertex(int id, int vertexSize = 1, std::vector<int> weights = std::vector<int>());
     bool addEdge(MetisEdge *edge);
     bool hasEdge(std::pair<int, int> uvPair);
+    int numEdges();
 
   };
 
@@ -64,6 +78,11 @@ namespace METIS {
     int vertexWeightsSize; // number of vertex parameters
 
     int *nodeWeights;
+
+    int *verttab;
+    int *edgetab;
+    int *edlotab;
+    int *velotab;
 
 
     std::vector< std::pair<int, int> > uniqueEdges;
@@ -82,6 +101,8 @@ namespace METIS {
 
     int numVertices();
     int numEdges();
+
+    void computeArrays();
 
   };
 
