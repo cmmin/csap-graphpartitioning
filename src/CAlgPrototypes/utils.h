@@ -8,7 +8,7 @@ namespace Utils {
   void split(const std::string &s, char delim, std::vector<std::string> &elems);
   std::vector<std::string> split(const std::string &s, char delim);
   int strToNum(std::string &s);
-  int charToNum(const char *c);
+  int charToNum(const char c);
 }
 
 #endif

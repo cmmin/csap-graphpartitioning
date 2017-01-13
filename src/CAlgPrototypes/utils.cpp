@@ -22,8 +22,8 @@ int strToNum(std::string &s) {
   return atoi(s.c_str());
 }
 
-int charToNum(const char *c) {
-  std::string str(c);
+int charToNum(const char c) {
+  std::string str(&c);
   return strToNum(str);
 }
 

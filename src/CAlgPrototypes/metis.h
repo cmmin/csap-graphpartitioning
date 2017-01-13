@@ -39,17 +39,17 @@ namespace METIS {
     int v;
     int weight;
 
-    MetisEdge(int u, int v, int weight = -1);
+    MetisEdge(int u, int v, int weight = 1);
     std::pair<int, int> getPair();
   };
 
   struct MetisVertex {
     int vertexID;
     int vertexSize;
-    int * vertexWeights;
+    std::vector<int> vertexWeights;
     std::map <std::pair<int, int>, MetisEdge *> edges;
 
-    MetisVertex(int id, int vertexSize = -1, int *weights = 0);
+    MetisVertex(int id, int vertexSize = 1, std::vector<int> weights = std::vector<int>());
     bool addEdge(MetisEdge *edge);
     bool hasEdge(std::pair<int, int> uvPair);
 
@@ -61,15 +61,27 @@ namespace METIS {
     std::string formatStr;
 
     int format;
-    int vertexWeightsSize;
+    int vertexWeightsSize; // number of vertex parameters
+
     int *nodeWeights;
 
-    MetisGraph(int numNodes, int numUniqueEdges, std::string formatStr = "111", int vertexWeightsSize = 0);
+
+    std::vector< std::pair<int, int> > uniqueEdges;
+    std::map<int, MetisVertex *> vertices;
+
+
+    MetisGraph(int numNodes, int numUniqueEdges, std::string formatStr = "", int vertexWeightsSize = 1);
 
     void setGraphFormat(std::string formatStr);
     void parseFormat();
     bool isGraphFormatFlagSet(int graphFormatFlag);
     void print();
+
+    bool addVertex(MetisVertex *vertex);
+    bool isEdgeUnique(MetisEdge *edge);
+
+    int numVertices();
+    int numEdges();
 
   };
 

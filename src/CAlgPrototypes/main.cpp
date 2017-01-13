@@ -22,6 +22,7 @@ int main(int argc, char*argv[]) {
   METIS::MetisGraph *graph = METIS::loadGraphFromFile("../../data/oneshot_fennel_weights.txt");
   if(graph) {
     graph->print();
+    std::cout << graph->numEdges() << "edges; " << graph->numVertices() << "vertices;" << std::endl;
   }
 
   int arr [100] = {};

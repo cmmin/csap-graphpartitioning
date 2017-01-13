@@ -20,13 +20,15 @@ namespace METIS {
       this->v = v;
     }
     this->weight = weight;
+
+    std::cout << "Created Edge: " << this->u << " " << this->v << std::endl;
   }
 
   std::pair<int, int> MetisEdge::getPair() {
     return std::make_pair(this->u, this->v);
   }
 
-  MetisVertex::MetisVertex(int id, int vertexSize, int *weights)
+  MetisVertex::MetisVertex(int id, int vertexSize, std::vector<int>weights)
     : vertexID(id), vertexSize(vertexSize), vertexWeights(weights)
   {}
 
@@ -37,7 +39,7 @@ namespace METIS {
 
     std::pair<int, int> uvPair = edge->getPair();
 
-    if(hasEdge(uvPair)) {
+    if(this->hasEdge(uvPair)) {
       return false;
     }
     else {
@@ -61,21 +63,6 @@ namespace METIS {
   bool graphFormatStringValid(std::string &format) {
     const int len = format.length();
 
-    if(len > 3) {
-      return false;
-    }
-
-    const char zero = '0';
-    const char one = '1';
-    for(int c = 0; c < len; c++) {
-      char chr = format[c];
-      if(chr != zero or chr != one) {
-        return false;
-      }
-    }
-
-    // all characters are 0 or 1
-    // test for length
     if(len == 0) {
       format = "000";
     }
@@ -86,6 +73,19 @@ namespace METIS {
       format = "0" + format;
     }
 
+    if(len > 3) {
+      std::cout << "Format String Length != 3" << std::endl;
+      return false;
+    }
+
+    const char zero = '0';
+    const char one = '1';
+    for(int c = 0; c < len; c++) {
+      char chr = format[c];
+      if(chr != zero && chr != one) {
+        return false;
+      }
+    }
     return true;
   }
 
@@ -107,7 +107,7 @@ namespace METIS {
       this->formatStr = correctedFormat;
     }
     else {
-      this->formatStr = "111";
+      this->formatStr = "000";
     }
 
     this->parseFormat();
@@ -126,9 +126,11 @@ namespace METIS {
       // b = edge weights provided
       // a = vertex labels provided
 
-      int vertWeights = Utils::charToNum(&this->formatStr[1]);
-      int edgeWeights = Utils::charToNum(&this->formatStr[0]);
-      int vertSize = Utils::charToNum(&this->formatStr[2]);
+      int edgeWeights = Utils::charToNum(this->formatStr[2]);
+      int vertWeights = Utils::charToNum(this->formatStr[1]);
+      int vertSize = Utils::charToNum(this->formatStr[0]);
+
+      std::cout << vertWeights << ":" << edgeWeights << ":" << vertSize << std::endl;
 
       if(vertWeights == 1) {
         this->format = (this->format | GraphFormat_VertexWeights);
@@ -148,14 +150,66 @@ namespace METIS {
 
   bool MetisGraph::isGraphFormatFlagSet(int graphFormatFlag) {
     // return true if format | flag == 1 (flag bit is set)
-    return ((this->format | graphFormatFlag) == 1);
+    return ((this->format & graphFormatFlag) > 0);
   }
 
   void MetisGraph::print() {
     std::cout << "Nodes=" << this->numNodes << " UniqueEdges=" << this->numUniqueEdges << " format=" << this->formatStr << std::endl;
+
+    if(this->isGraphFormatFlagSet(GraphFormat_EdgeWeights)) {
+      std::cout << "Edge Weights = on" << std::endl;
+    }
+    if(this->isGraphFormatFlagSet(GraphFormat_VertexWeights)) {
+      std::cout << "Vertex Weights = on" << std::endl;
+    }
+    if(this->isGraphFormatFlagSet(GraphFormat_VertexSize)) {
+      std::cout << "Vertex Size = on" << std::endl;
+    }
+  }
+
+  bool MetisGraph::addVertex(MetisVertex *vertex) {
+    if(vertex) {
+      std::map <std::pair<int, int>, MetisEdge *>::iterator edgeIt;
+      for(edgeIt = vertex->edges.begin(); edgeIt != vertex->edges.end(); edgeIt++) {
+        if(this->isEdgeUnique(edgeIt->second) == true) {
+          // add edge
+          this->uniqueEdges.push_back(edgeIt->first);
+        }
+      }
+      std::map <int, MetisVertex *>::iterator vIt = this->vertices.find(vertex->vertexID);
+      if(vIt == this->vertices.end()) {
+        // add vertex
+        this->vertices[vertex->vertexID] = vertex;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  bool MetisGraph::isEdgeUnique(MetisEdge *edge) {
+    if(edge) {
+      for(int i = 0; i < this->uniqueEdges.size(); i++) {
+        std::pair<int, int> e = this->uniqueEdges[i];
+        if(e.first > e.second) {
+          std::cout << "Edge first > second" << std::endl;
+        }
+        if(edge->u == e.first && edge->v == e.second) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
 
+  int MetisGraph::numVertices() {
+    return this->vertices.size();
+  }
+
+  int MetisGraph::numEdges() {
+    return this->uniqueEdges.size();
+  }
 
 MetisGraph *loadGraphFromFile(std::string path) {
   std::ifstream infile(path);
@@ -164,7 +218,7 @@ MetisGraph *loadGraphFromFile(std::string path) {
 
   bool isFirstLine = true;
   std::string line;
-  int nodeID = 0;
+  int nodeID = 1;
   while(std::getline(infile, line)) {
     // clean each line
     cleanLine(line);
@@ -191,6 +245,7 @@ MetisGraph *loadGraphFromFile(std::string path) {
     else {
       parseMETISNodeLine(line, nodeID, graph);
       nodeID++;
+      //break;
     }
   }
 
@@ -210,7 +265,7 @@ MetisGraph * parseMETISHeader(std::string &header) {
     int numEdges = Utils::strToNum(elems[1]);
 
     std::string format = "";
-    int ncon = 0;
+    int ncon = 1; // default is 1
 
     if(numElems > 2) {
       format = elems[2];
@@ -221,6 +276,7 @@ MetisGraph * parseMETISHeader(std::string &header) {
     }
 
     MetisGraph *graph = new MetisGraph(numNodes, numEdges, format, ncon);
+    //graph->print();
     return graph;
   }
   else {
@@ -247,10 +303,10 @@ void parseMETISNodeLine(std::string line, int nodeID, MetisGraph *graph) {
   int minSize = graph->isGraphFormatFlagSet(GraphFormat_VertexSize) ? 1 : 0;
   minSize += graph->isGraphFormatFlagSet(GraphFormat_VertexWeights) ? graph->vertexWeightsSize : 0;
 
-  std::cout << "Min size= " << minSize << std::endl;
+  //std::cout << "Min size= " << minSize << std::endl;
 
   int nodeSize = 0;
-  int vertexWeights [graph->vertexWeightsSize];
+  std::vector<int> vertexWeights;;
 
   if(values.size() < minSize) {
     // parse error, cannot extract the right number of parameters from node
@@ -259,22 +315,26 @@ void parseMETISNodeLine(std::string line, int nodeID, MetisGraph *graph) {
     return;
   }
 
-  // extract values
+
   int idStart = 0;
   if(graph->isGraphFormatFlagSet(GraphFormat_VertexSize)) {
+    std::cout << "parseMETISNodeLine() - extracting vertexSize - not sure this should ever run." << std::endl;
     // OK, can extract vertex size
     nodeSize = values[0];
     idStart = 1;
   }
 
   if(graph->isGraphFormatFlagSet(GraphFormat_VertexWeights)) {
-    int w_i = 0;
+    //int w_i = 0;
     for(int i = idStart; i <= idStart + graph->vertexWeightsSize; i++) {
-      vertexWeights[w_i] = values[i];
-      w_i++;
+      vertexWeights.push_back(values[i]);
+      //w_i++;
     }
     idStart += graph->vertexWeightsSize;
   }
+
+  // create a vertex
+  MetisVertex *vertex = new MetisVertex(nodeID, 1, vertexWeights);
 
   // extract edge/weight pair
   for(int i = idStart; i < nParts; i++) {
@@ -285,6 +345,14 @@ void parseMETISNodeLine(std::string line, int nodeID, MetisGraph *graph) {
       if(i + 1 < nParts) {
         i++;
         edgeW = values[i];
+
+        // create edge
+        MetisEdge *edge = new MetisEdge(nodeID, node, edgeW);
+
+        // add edge to vertex
+        if(vertex->addEdge(edge) == false) {
+          delete edge;
+        }
       }
       else {
         std::cout << "Error: cannot extract edge weight for vertex " << nodeID << std::endl;
@@ -293,6 +361,8 @@ void parseMETISNodeLine(std::string line, int nodeID, MetisGraph *graph) {
     }
   }
 
+  // add vertex to graph
+  graph->addVertex(vertex);
 }
 
 bool lineIsComment(std::string &line) {
