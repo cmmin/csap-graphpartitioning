@@ -73,13 +73,13 @@ fi
 if [[ $build == 1 ]]; then
   echo "Building for macOS"
   echo "g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../tools/scotch/lib/macOS/ -lscotch -o scotch"
-  g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../tools/scotch/lib/macOS/ -lscotch -o scotch
+  g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../../tools/scotch/lib/macOS/ -lscotch -o scotch
   echo ""
   echo "Build Done."
   echo ""
   echo "Updating executable to point to correct library."
   echo "install_name_tool -change libscotch.dylib ../../tools/scotch/lib/macOS/libscotch.dylib scotch"
-  install_name_tool -change libscotch.dylib ../../tools/scotch/lib/macOS/libscotch.dylib scotch
+  install_name_tool -change libscotch.dylib ../../../tools/scotch/lib/macOS/libscotch.dylib scotch
   echo ""
 fi
 
@@ -87,13 +87,13 @@ if [[ $build == 2 ]]; then
   echo "Building for linux - NOT SUPPORTED UNTIL LIBSCOTCH.so is available."
   exit 2
   echo "g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../tools/scotch/lib/macOS/ -lscotch -o scotch"
-  g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../tools/scotch/lib/macOS/ -lscotch -o scotch
+  g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../../tools/scotch/lib/macOS/ -lscotch -o scotch
   echo ""
   echo "Build Done."
   echo ""
   echo "Updating executable to point to correct library."
   echo "install_name_tool -change libscotch.dylib ../../tools/scotch/lib/macOS/libscotch.dylib scotch"
-  install_name_tool -change libscotch.dylib ../../tools/scotch/lib/macOS/libscotch.dylib scotch
+  install_name_tool -change libscotch.dylib ../../../tools/scotch/lib/macOS/libscotch.dylib scotch
   echo ""
 fi
 

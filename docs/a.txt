@@ -1,0 +1,12 @@
+Document:
+
+Sommario
+
+Aim
+Components
+Description
+
+File documentazione (doxygen)
+Esempio di uso
+
+Major details available in source code
