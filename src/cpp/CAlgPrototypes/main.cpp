@@ -5,6 +5,8 @@
 #include <stdexcept> // for exceptions
 #include <fstream> // for writing to file
 #include <cstdlib> // for itoa
+//#include <stdlib.h>
+#include <cstring>
 
 // Include Scotch.h
 #include "includes/scotch.h"
@@ -120,7 +122,7 @@ void gpart() {
   }
 
   // Graph Partition Algorithm
-  METIS::MetisGraph *metisGraph = METIS::loadGraphFromFile("../../data/oneshot_fennel_weights.txt");
+  METIS::MetisGraph *metisGraph = METIS::loadGraphFromFile("../../../data/oneshot_fennel_weights.txt");
 
   if(metisGraph == 0) {
     throw std::runtime_error("Could not load Metis graph.");
@@ -178,7 +180,7 @@ void gpart() {
   std::cout << "Successfully ran graphMap." << std::endl;
 
   // print the parttab
-  writePartitions(parttab, metisGraph->numVertices(), "../../data/oneshot_fennel_partitions.txt");
+  writePartitions(parttab, metisGraph->numVertices(), "../../../data/oneshot_fennel_partitions.txt");
 
 }
 
@@ -189,7 +191,7 @@ void writePartitions(int *parttab, int numVertices, std::string path) {
 
   std::ofstream file;
   // truncate file on open
-  file.open(path, std::ofstream::out | std::ofstream::trunc);
+  file.open(path.c_str(), std::ofstream::out | std::ofstream::trunc);
   if(file.is_open()) {
     // ok to write
     for(int i = 0; i < numVertices; i++) {

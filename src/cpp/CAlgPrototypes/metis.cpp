@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream> // for reading file
 #include <vector>
+#include <algorithm>
 
 
 #include "utils.h"
@@ -251,7 +252,7 @@ namespace METIS {
 
 
 MetisGraph *loadGraphFromFile(std::string path) {
-  std::ifstream infile(path);
+  std::ifstream infile(path.c_str());
 
   MetisGraph *graph= 0;
 
@@ -421,6 +422,8 @@ bool lineIsComment(std::string &line) {
 void cleanLine(std::string &line) {
   line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
   line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
+  //line.erase(std::find(line.begin(), line.end(), '\n'));
+  //line.erase(std::find(line.begin(), line.end(), '\r'));
 }
 
 

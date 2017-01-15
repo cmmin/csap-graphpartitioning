@@ -113,7 +113,7 @@ SCOTCH_Strat *createSCOTCHStrategy(StrategyTypes strategy) {
     int success = -1;
 
     switch(strategy) {
-      case StrategyTypes::StrategyType_GraphMapBuild: {
+      case StrategyType_GraphMapBuild: {
         // Manual: 8.15.4
         // Strategy string:
 
@@ -121,7 +121,7 @@ SCOTCH_Strat *createSCOTCHStrategy(StrategyTypes strategy) {
         success = SCOTCH_stratGraphMap(strat, strategyStr.c_str());
         break;
       }
-      case StrategyTypes::StrategyType_Default:
+      case StrategyType_Default:
       default: {
         // return the default strategy
         return strat;
