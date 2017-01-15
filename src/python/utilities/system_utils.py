@@ -1,4 +1,5 @@
 import platform
+from enum import Enum
 
 class OS(Enum):
     linux   = 1
