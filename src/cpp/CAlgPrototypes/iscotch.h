@@ -4,17 +4,20 @@
 #include <iostream>
 #include "includes/scotch.h"
 
+// forward declaration
 namespace METIS {
   struct MetisGraph;
 }
 
 namespace ISCOTCH {
 
+  /// Represents the available strategies from SCOTCH
   enum StrategyTypes {
     StrategyType_Default,
     StrategyType_GraphMapBuild
   };
 
+  /// @brief SCOTCH_version()
   void version();
 
   /* ********************* */

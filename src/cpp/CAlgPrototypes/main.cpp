@@ -15,6 +15,131 @@
 #include "metis.h"
 #include "iscotch.h"
 
+
+/// @brief Runs graphMap on the metis input file
+void gpart();
+/// @brief Writes the partition for each vertex
+void writePartitions(int *parttab, int numVertices, std::string path);
+
+/**** MAIN ***/
+int main(int argc, char*argv[]) {
+  try {
+    gpart();
+  }
+  catch (const std::exception &e) {
+    std::cout << "EXCEPTION running gpart(): " << e.what() << std::endl;
+  }
+}
+
+void gpart() {
+
+  // parameters initialisation
+  const int partitionNbr = 10; // number of partitions/k clusters
+  int straval = 0; // default strategy value: see pg. 60 SCOTCH for other flag values
+  double kbalval = 0.001; // default imbalance tolerance value
+
+  std::string strflags = ""; // stores the flags for the strategy (see SCOTCH 8.3.2 section manual)
+  const char * straptr = 0; // c-string pointer for strflags
+  if(strflags.length() != 0) {
+    straptr = strflags.c_str();
+  }
+
+  // Load the METIS graph
+  METIS::MetisGraph *metisGraph = METIS::loadGraphFromFile("../../../data/oneshot_fennel_weights.txt");
+
+  // error if not loaded properly
+  if(metisGraph == 0) {
+    throw std::runtime_error("Could not load Metis graph.");
+  }
+
+  // compute arrays for SCOTCH graph
+  metisGraph->computeArrays();
+  // output basic metis graph stats
+  metisGraph->print();
+
+  // create the SCOTCH Graph from the Metis data
+  SCOTCH_Graph *scotchGraph = ISCOTCH::createSCOTCHGraph();
+  if(ISCOTCH::graphBuild(scotchGraph, metisGraph) == false) {
+    throw std::runtime_error("Problem instantiating SCOTCH graph from metis Graph.");
+  }
+  std::cout << "Created scotch graph from metis." << std::endl;
+
+  // create the architecture object
+  SCOTCH_Arch *arch = ISCOTCH::createSCOTCHArch();
+  if(arch == 0) {
+    throw std::runtime_error("Could not create Architecture object");
+  }
+
+  // populate the architecture object for graph partitioning
+  if(SCOTCH_archCmplt(arch, (SCOTCH_Num)partitionNbr) != 0) {
+    throw std::runtime_error("Could not create a complete graph partitioning architecture");
+  }
+  std::cout << "Created complete graph partitioning architecture" << std::endl;
+
+
+  // create the strategy
+  SCOTCH_Strat *strategy = ISCOTCH::createSCOTCHStrategy(ISCOTCH::StrategyType_Default);
+  if(strategy == 0) {
+    throw std::runtime_error("Could not create default strategy object.");
+  }
+
+  // populate strategy parameters for graphMap
+  // (strategy ptr, scotch_num falgval, s_n partnbr, dbl balrat)
+  if(SCOTCH_stratGraphMapBuild(strategy, (SCOTCH_Num)straval, (SCOTCH_Num)partitionNbr, kbalval) != 0) {
+    throw std::runtime_error("Could not create strategy for Graph Map Build");
+  }
+
+
+  if(straptr != 0) {
+    // use the strategy flags, on the strategy
+    SCOTCH_stratGraphMap(strategy, straptr);
+  }
+
+  // create the vector of partition values, must be = number of vertices
+  int * parttab = new int[metisGraph->numVertices()];
+
+  // run the mapping of the vertices to the partitions
+  if(ISCOTCH::graphMap(scotchGraph, arch, strategy, parttab) == false) {
+    throw std::runtime_error("Failed to run Graph Map on the data.");
+  }
+  std::cout << "Successfully ran graphMap." << std::endl;
+
+  // write the partitions to file
+  writePartitions(parttab, metisGraph->numVertices(), "../../../data/oneshot_fennel_partitions.txt");
+
+}
+
+void writePartitions(int *parttab, int numVertices, std::string path) {
+  if(parttab == 0) {
+    return;
+  }
+
+  std::ofstream file;
+  // truncate file on open
+  file.open(path.c_str(), std::ofstream::out | std::ofstream::trunc);
+  if(file.is_open()) {
+    // ok to write
+    for(int i = 0; i < numVertices; i++) {
+      if(i > 0) {
+        file << "\n";
+      }
+
+      std::ostringstream ss;
+      ss << *(parttab + i);
+      file << ss.str();
+
+      //file << std::string::to_string(*(parttab + i));
+    }
+  }
+  file.close();
+}
+
+
+
+
+
+
+
 /* notes */
 /*
 
@@ -93,118 +218,3 @@ if ((straval != 0) || ((flagval & C_FLAGKBALVAL) != 0)) {
   }
 #endif
 */
-
-void gpart();
-void writePartitions(int *parttab, int numVertices, std::string path);
-
-/**** MAIN ***/
-int main(int argc, char*argv[]) {
-
-  try {
-    gpart();
-  }
-  catch (const std::exception &e) {
-    std::cout << "EXCEPTION running gpart(): " << e.what() << std::endl;
-  }
-}
-
-void gpart() {
-
-  // paramter initialisation
-  const int partitionNbr = 10;
-  int straval = 0; // default strategy value: see pg. 60 for other flag values
-  double kbalval = 0.001; // default imbalance tolerance
-
-  const char * straptr = 0;
-  std::string strflags = "";
-  if(strflags.length() != 0) {
-    straptr = strflags.c_str();
-  }
-
-  // Graph Partition Algorithm
-  METIS::MetisGraph *metisGraph = METIS::loadGraphFromFile("../../../data/oneshot_fennel_weights.txt");
-
-  if(metisGraph == 0) {
-    throw std::runtime_error("Could not load Metis graph.");
-  }
-
-
-  // output metis graph
-  metisGraph->computeArrays();
-  metisGraph->print();
-
-  // create and load the graph
-  SCOTCH_Graph *scotchGraph = ISCOTCH::createSCOTCHGraph();
-  if(ISCOTCH::graphBuild(scotchGraph, metisGraph) == false) {
-    throw std::runtime_error("Problem instantiating SCOTCH graph from metis Graph.");
-  }
-  std::cout << "Created scotch graph from metis." << std::endl;
-
-  // create the architecture
-  SCOTCH_Arch *arch = ISCOTCH::createSCOTCHArch();
-  if(arch == 0) {
-    throw std::runtime_error("Could not create Architecture object");
-  }
-
-  // create the partitioning architecture
-  if(SCOTCH_archCmplt(arch, (SCOTCH_Num)partitionNbr) != 0) {
-    throw std::runtime_error("Could not create a complete graph partitioning architecture");
-  }
-  std::cout << "Created complete graph partitioning architecture" << std::endl;
-
-
-  // create the strategy
-  SCOTCH_Strat *strategy = ISCOTCH::createSCOTCHStrategy(ISCOTCH::StrategyType_Default);
-  if(strategy == 0) {
-    throw std::runtime_error("Could not create default strategy object.");
-  }
-
-  // populate strategy parameters
-  // (strategy ptr, scotch_num falgval, s_n partnbr, dbl balrat)
-  if(SCOTCH_stratGraphMapBuild(strategy, (SCOTCH_Num)straval, (SCOTCH_Num)partitionNbr, kbalval) != 0) {
-    throw std::runtime_error("Could not create strategy for Graph Map Build");
-  }
-
-
-  if(straptr != 0) {
-    // use the strategy flag structure on the strategy
-    SCOTCH_stratGraphMap(strategy, straptr);
-  }
-
-
-  int * parttab = new int[metisGraph->numVertices()];
-
-  if(ISCOTCH::graphMap(scotchGraph, arch, strategy, parttab) == false) {
-    throw std::runtime_error("Failed to run Graph Map on the data.");
-  }
-  std::cout << "Successfully ran graphMap." << std::endl;
-
-  // print the parttab
-  writePartitions(parttab, metisGraph->numVertices(), "../../../data/oneshot_fennel_partitions.txt");
-
-}
-
-void writePartitions(int *parttab, int numVertices, std::string path) {
-  if(parttab == 0) {
-    return;
-  }
-
-  std::ofstream file;
-  // truncate file on open
-  file.open(path.c_str(), std::ofstream::out | std::ofstream::trunc);
-  if(file.is_open()) {
-    // ok to write
-    for(int i = 0; i < numVertices; i++) {
-      if(i > 0) {
-        file << "\n";
-      }
-
-      std::ostringstream ss;
-      ss << *(parttab + i);
-      file << ss.str();
-
-      //file << std::string::to_string(*(parttab + i));
-    }
-  }
-  file.close();
-}

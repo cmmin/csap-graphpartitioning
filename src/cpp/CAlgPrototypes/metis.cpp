@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream> // for reading file
 #include <vector>
-#include <algorithm>
+#include <algorithm> // for std::remove
 
 
 #include "utils.h"
@@ -21,8 +21,6 @@ namespace METIS {
       this->v = v;
     }
     this->weight = weight;
-
-    //std::cout << "Created Edge: " << this->u << " " << this->v << std::endl;
   }
 
   std::pair<int, int> MetisEdge::getPair() {
@@ -52,9 +50,11 @@ namespace METIS {
 
   bool MetisVertex::hasEdge(std::pair<int, int> uvPair) {
     std::map<std::pair<int, int>, MetisEdge *>::iterator it;
+
+    // find() returns an iterator pointing to first instance of uvPair, or map::end()
     it = this->edges.find(uvPair);
     if(it != this->edges.end()) {
-      // pair exists
+      // pair exists, because find didn't return end of map
       return true;
     }
     return false;
@@ -64,8 +64,10 @@ namespace METIS {
     return this->edges.size();
   }
 
-
   bool graphFormatStringValid(std::string &format) {
+    // appends as many "0" as necessary to make format "xxx" long.
+    // test length of format and whether it contains only 0, 1
+
     const int len = format.length();
 
     if(len == 0) {
@@ -85,6 +87,7 @@ namespace METIS {
 
     const char zero = '0';
     const char one = '1';
+    // test that format string contains 0 or 1s only
     for(int c = 0; c < len; c++) {
       char chr = format[c];
       if(chr != zero && chr != one) {
@@ -98,9 +101,14 @@ namespace METIS {
     : numNodes(numNodes),
     numUniqueEdges(numUniqueEdges),
     formatStr(formatStr),
+    format(0),
     vertexWeightsSize(vertexWeightsSize)
   {
     this->nodeWeights = new int[numNodes];
+    this->verttab = 0;
+    this->edgetab = 0;
+    this->edlotab = 0;
+    this->velotab = 0;
 
     this->parseFormat();
   }
@@ -112,6 +120,7 @@ namespace METIS {
       this->formatStr = correctedFormat;
     }
     else {
+      // default
       this->formatStr = "000";
     }
 
@@ -126,7 +135,7 @@ namespace METIS {
     }
 
     if(this->formatStr.length() == 3) {
-      // FLAG abc
+      // FLAG "abc"
       // c = vertex weights provided
       // b = edge weights provided
       // a = vertex labels provided
@@ -135,7 +144,7 @@ namespace METIS {
       int vertWeights = Utils::charToNum(this->formatStr[1]);
       int vertSize = Utils::charToNum(this->formatStr[0]);
 
-      std::cout << vertWeights << ":" << edgeWeights << ":" << vertSize << std::endl;
+      //std::cout << vertWeights << ":" << edgeWeights << ":" << vertSize << std::endl;
 
       if(vertWeights == 1) {
         this->format = (this->format | GraphFormat_VertexWeights);
@@ -162,13 +171,13 @@ namespace METIS {
     std::cout << "Nodes=" << this->numNodes << " UniqueEdges=" << this->numUniqueEdges << " format=" << this->formatStr << std::endl;
 
     if(this->isGraphFormatFlagSet(GraphFormat_EdgeWeights)) {
-      std::cout << "Edge Weights = on" << std::endl;
+      std::cout << "\tEdge Weights = on" << std::endl;
     }
     if(this->isGraphFormatFlagSet(GraphFormat_VertexWeights)) {
-      std::cout << "Vertex Weights = on" << std::endl;
+      std::cout << "\tVertex Weights = on" << std::endl;
     }
     if(this->isGraphFormatFlagSet(GraphFormat_VertexSize)) {
-      std::cout << "Vertex Size = on" << std::endl;
+      std::cout << "\tVertex Size = on" << std::endl;
     }
   }
 
@@ -176,14 +185,15 @@ namespace METIS {
     if(vertex) {
       std::map <std::pair<int, int>, MetisEdge *>::iterator edgeIt;
       for(edgeIt = vertex->edges.begin(); edgeIt != vertex->edges.end(); edgeIt++) {
+        // iterate over each edge
         if(this->isEdgeUnique(edgeIt->second) == true) {
-          // add edge
+          // add edge, edge is unique
           this->uniqueEdges.push_back(edgeIt->first);
         }
       }
       std::map <int, MetisVertex *>::iterator vIt = this->vertices.find(vertex->vertexID);
       if(vIt == this->vertices.end()) {
-        // add vertex
+        // add vertex since it is not in the vertices vector just yet
         this->vertices[vertex->vertexID] = vertex;
       }
       return true;
@@ -216,8 +226,9 @@ namespace METIS {
     return this->uniqueEdges.size();
   }
 
-
   void MetisGraph::computeArrays() {
+
+      // compute the SCOTCH arrays
 
       // populate vertices & edges
       this->verttab = new int[this->numVertices() + 1];
@@ -235,42 +246,43 @@ namespace METIS {
         int count = 0;
         std::map <std::pair<int, int>, MetisEdge *>::iterator eit;
         for(eit = it->second->edges.begin(); eit != it->second->edges.end(); eit++) {
+          // iterate over each egde
           int otherID = eit->second->getOtherVertex(it->first);
 
           this->edgetab[vtabID + count] = otherID - 1;
           this->edlotab[vtabID + count] = eit->second->weight;
 
           count++;
-        }
+        } // END foreach edge
         // update vtabID
         vtabID += it->second->numEdges();
-      }
+      } // END foreach vertex
+
+      // set last value in verttab as required for compact format (see SCOTCH documentation)
       this->verttab[this->numVertices()] = vtabID;
-
-
   }
 
 
 MetisGraph *loadGraphFromFile(std::string path) {
-  std::ifstream infile(path.c_str());
 
   MetisGraph *graph= 0;
 
   bool isFirstLine = true;
   std::string line;
+
   int nodeID = 1;
+
+  std::ifstream infile(path.c_str());
   while(std::getline(infile, line)) {
-    // clean each line
-    cleanLine(line);
-
-    // TODO output warning if line is empty?
-
     // skip comment lines
     if(lineIsComment(line)) {
       continue;
     }
 
-    // first line is the comment line
+    // clean each line
+    cleanLine(line);
+
+    // if is first line, it should be the header line
     if(isFirstLine) {
       // parse the header of the graph
       graph = parseMETISHeader(line);
@@ -285,7 +297,6 @@ MetisGraph *loadGraphFromFile(std::string path) {
     else {
       parseMETISNodeLine(line, nodeID, graph);
       nodeID++;
-      //break;
     }
   }
 
@@ -422,8 +433,6 @@ bool lineIsComment(std::string &line) {
 void cleanLine(std::string &line) {
   line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
   line.erase(std::remove(line.begin(), line.end(), '\r'), line.end());
-  //line.erase(std::find(line.begin(), line.end(), '\n'));
-  //line.erase(std::find(line.begin(), line.end(), '\r'));
 }
 
 
