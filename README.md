@@ -4,6 +4,17 @@ This document contains a brief guide to the repository and code within. It will 
 
 Some basic documentation is presented here. More detailed documentation can be found within the source files in the repository.
 
+Project Aims
+
+- Implement fennel graph partitioning algorithms with SCOTCH or PaToH.
+
+Objectives
+
+- [x] Implement SCOTCH_graphMap() algorithm in C++
+- [] Implement SCOTCH_graphMapFixed() algorithm in C++
+- [] Fully working alternative to fennel algorithm
+- [] Port the algorithms to Python
+- [] Integrate algorithms with the larger partitioning algorithm
 
 # Structure of Repository
 
