@@ -73,7 +73,7 @@ fi
 if [[ $build == 1 ]]; then
   echo "Building for macOS"
   echo "g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../tools/scotch/lib/macOS/ -lscotch -o scotch"
-  g++ -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../../tools/scotch/lib/macOS/ -lscotch -o scotch
+  g++ -std=c++11 -Wall main.cpp utils.cpp metis.cpp iscotch.cpp -L../../../tools/scotch/lib/macOS/ -lscotch -o scotch
   echo ""
   echo "Build Done."
   echo ""

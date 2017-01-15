@@ -4,8 +4,8 @@
 # Specific Files #
 ##################
 
-src/CAlgPrototypes/test
-src/CAlgPrototypes/scotch
+src/cpp/CAlgPrototypes/test
+src/cpp/CAlgPrototypes/scotch
 
 # Specific Compiled sources that we want to send to repository #
 ################################################################
