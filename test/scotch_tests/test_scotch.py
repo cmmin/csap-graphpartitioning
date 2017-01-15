@@ -2,12 +2,14 @@ import context
 import unittest
 
 import scotch
-from utilites.system_utils import OS, getOS
+from utilities.system_utils import OS, getOS
 
 class TestScotchLibrary(unittest.TestCase):
     def test_loadScotchLibrary(self):
         if getOS() == OS.linux:
-            libPath = "../../tools/scotch/lib/linux/libscotch.a"
+            libPath = "/usr/lib/libscotch-5.1.so"
+            #libPath = "../../tools/scotch/lib/linux/libscotch.so"
+            print(libPath)
         elif getOS() == OS.macOS:
             libPath = "../../tools/scotch/lib/macOS/libscotch.dylib"
 

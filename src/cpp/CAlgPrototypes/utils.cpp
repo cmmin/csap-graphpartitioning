@@ -1,6 +1,7 @@
 #include "utils.h"
 
 #include <sstream>
+#include <cstdlib>
 
 namespace Utils {
 void split(const std::string &s, char delim, std::vector<std::string> &elems) {
