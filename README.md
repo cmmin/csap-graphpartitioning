@@ -1,5 +1,8 @@
 # SCOTCH Partitioning Algorithms
 
+- Author: 	Carlo Mattia Minciacchi
+- Email:		carlo.minciacchi@cantab.net 
+
 This document contains a brief guide to the repository and code within. It will be updated as the project progresses.
 
 Some basic documentation is presented here. More detailed documentation can be found within the source files in the repository.
