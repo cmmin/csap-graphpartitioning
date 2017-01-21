@@ -67,6 +67,8 @@ class LibScotch:
         self.clib = CLibrary(libraryPath)
         self.clib.load()
 
+        self.enableExceptions = False
+
         # *****************
         # structures & data
         # *****************
@@ -206,9 +208,6 @@ class LibScotch:
         return False
 
 
-
-
-
     def deleteSCOTCHGraph(self):
         # TODO write test for this
         self.SCOTCH_graphExit(self.graph)
@@ -222,6 +221,28 @@ class LibScotch:
         return False
 
 
+    def createStrategy(self):
+        self.strategy = self.SCOTCH_Strat()
+        ret = self.SCOTCH_stratInit(self.strategy)
+        if ret == 0:
+            return True
+        return False
+
+    def setStrategyGraphMapBuild(self, straval, partitionNbr, kbalval = 0.1):
+        ret = self.SCOTCH_stratGraphMapBuild(self.strategy, straval, partitionNbr, kbalval)
+        if ret == 0:
+            return True
+        return False
+
+    def setStrategyFlags(self, strategyFlags):
+        if(typeutils.isStr(strategyFlags) == False):
+            strategyFlags = ''
+        # Note: must encode the string as that returns a bytecode equivalent
+        success = self.SCOTCH_stratGraphMap(self.strategy, strategyFlags.encode('utf-8'))
+        if(success == 0):
+            return True
+        return False
+
     def createSCOTCHGraphMapStrategy(self, strategyFlags):
         #self.strategy = self.SCOTCH_stratAlloc()
         self.strategy = self.SCOTCH_Strat()
@@ -233,4 +254,11 @@ class LibScotch:
             success = self.SCOTCH_stratGraphMap(self.strategy, strategyFlags.encode('utf-8'))
             if(success == 0):
                 return True
+        return False
+
+
+    def graphMap(self, parttab):
+        ret = self.SCOTCH_graphMap(self.graph, self.architecture, self.strategy, parttab.ctypes)
+        if ret == 0:
+            return True
         return False

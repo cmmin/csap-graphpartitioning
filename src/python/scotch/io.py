@@ -17,6 +17,7 @@ class ScotchGraphArrays:
         self.edlotab = []
         self.velotab = []
         self.vertexweights = []
+        self.parttab = []
 
         self.vertnbr = 0
         self.edgenbr = 0
@@ -36,6 +37,8 @@ class ScotchGraphArrays:
 
         self.edlotab = genArray(metisGraph.numEdges() * 2)
         self.velotab = genArray(metisGraph.numVertices())
+
+        self.parttab = genArray(metisGraph.numVertices())
 
         if metisGraph.vertexWeightsCount > 1:
             print("Warning: fromMetisGraph() number of weights for each vertex is unsupported ", metisGraph.vertexWeightsCount)
@@ -69,6 +72,7 @@ class ScotchGraphArrays:
         self.edgetab = self._exportToNumpyArray(self.edgetab)
         self.edlotab = self._exportToNumpyArray(self.edlotab)
         self.velotab = self._exportToNumpyArray(self.velotab)
+        self.parttab = self._exportToNumpyArray(self.parttab)
         self.vertexweights = self._exportToNumpyArray(self.vertexweights)
 
     def _exportToNumpyArray(self, array):
