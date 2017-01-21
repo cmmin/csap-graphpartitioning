@@ -1,6 +1,7 @@
-from utilities.clibrary_loader import CLibrary
+from ctypes import POINTER, c_int, c_double, c_void_p, c_char_p, cast
 
-from ctypes import POINTER, c_int, c_double, c_void_p, c_char_p
+from utilities.clibrary_loader import CLibrary
+import utilities.typeutils as typeutils
 
 '''
 Notes about SCOTCH
@@ -68,9 +69,15 @@ class LibScotch:
         # structures & data
         # *****************
 
+        # These describe the type of object to be created
         self.SCOTCH_Arch = c_double*128
         self.SCOTCH_Graph = c_double*128
         self.SCOTCH_Strat = c_double*128
+
+        # These store the scotch data objects (ie. graph = SCOTCH_Graph())
+        self.architecture = None
+        self.graph = None
+        self.strategy = None
 
         # *******
         # methods
@@ -82,7 +89,7 @@ class LibScotch:
 
         # SCOTCH_archAlloc
         self.SCOTCH_archAlloc = self.clib.library.SCOTCH_archAlloc
-        self.SCOTCH_archAlloc.argtypes = [None]
+        #self.SCOTCH_archAlloc.argtypes = [ None ]
 
         # SCOTCH_archInit
         self.SCOTCH_archInit = self.clib.library.SCOTCH_archInit
@@ -98,7 +105,7 @@ class LibScotch:
 
         # SCOTCH_graphAlloc
         self.SCOTCH_graphAlloc = self.clib.library.SCOTCH_graphAlloc
-        self.SCOTCH_graphAlloc.argtypes = [None]
+        #self.SCOTCH_graphAlloc.argtypes = [ None ]
 
         # SCOTCH_graphInit
         self.SCOTCH_graphInit = self.clib.library.SCOTCH_graphInit
@@ -110,7 +117,7 @@ class LibScotch:
 
         # SCOTCH_graphCheck
         self.SCOTCH_graphCheck = self.clib.library.SCOTCH_graphCheck
-        self.SCOTCH_graphCHeck.argtypes = [POINTER(self.SCOTCH_graph)]
+        self.SCOTCH_graphCheck.argtypes = [POINTER(self.SCOTCH_Graph)]
 
         # SCOTCH_graphBuild
         self.SCOTCH_graphBuild = self.clib.library.SCOTCH_graphBuild
@@ -122,7 +129,7 @@ class LibScotch:
 
         # SCOTCH_stratAlloc
         self.SCOTCH_stratAlloc = self.clib.library.SCOTCH_stratAlloc
-        self.SCOTCH_stratAlloc.argtypes = [ None ]
+        #self.SCOTCH_stratAlloc.argtypes = [ None ]
 
         # SCOTCH_stratInit
         self.SCOTCH_stratInit = self.clib.library.SCOTCH_stratInit
@@ -131,7 +138,7 @@ class LibScotch:
         self.SCOTCH_stratGraphMap = self.clib.library.SCOTCH_stratGraphMap
         self.SCOTCH_stratGraphMap.argtypes = [POINTER(self.SCOTCH_Strat), c_char_p]
 
-        self.SCOTCH_stratGraphMapBuild = self.clib.library.SCOTCH_stratGraphMap
+        self.SCOTCH_stratGraphMapBuild = self.clib.library.SCOTCH_stratGraphMapBuild
         self.SCOTCH_stratGraphMapBuild.argtypes = [POINTER(self.SCOTCH_Strat), c_int, c_int, c_double]
 
         # MAPPING Functions
@@ -150,59 +157,63 @@ class LibScotch:
         return "{}.{}.{}".format(major_ptr.value, relative_ptr.value, patch_ptr.value)
 
     def createSCOTCHArch(self):
-        self.SCOTCH_Arch = self.SCOTCH_archAlloc()
-        ret = self.SCOTCH_archInit(self.SCOTCH_Arch)
+        #self.SCOTCH_Arch = self.SCOTCH_archAlloc()
+        #print(self.SCOTCH_Arch)
+        self.architecture = self.SCOTCH_Arch()
+        ret = self.SCOTCH_archInit(self.architecture)
         if(ret == 0):
             return True
         return False
 
     def deleteSCOTCHArch(self):
-        self.SCOTCH_archExit(self.SCOTCH_Arch)
-        self.SCOTCH_Arch = None
+        self.SCOTCH_archExit(self.architecture)
+        self.architecture = None
 
     def populatePartitionArchitecture(self, numPartitions):
-        if(isinstance(numPartitions, int) == False):
-            try:
-                numPartitions = int(numPartitions)
-                if(isinstance(numPartitions, int) == False):
-                    return False
-            except ValueError as e:
-                print(e)
-                return False
+        if(self.architecture is None):
+            return False
 
-        ret = self.SCOTCH_archCmplt(self.SCOTCH_Arch, numPartitions)
-        if(ret == 0):
-            return True
-
+        if(typeutils.isInt(numPartitions)):
+            ret = self.SCOTCH_archCmplt(self.architecture, numPartitions)
+            if(ret == 0):
+                return True
         return False
 
     def createSCOTCHGraph(self):
-        self.SCOTCH_Graph = self.SCOTCH_graphAlloc()
-        ret = self.SCOTCH_graphInit(self.SCOTCH_Graph)
+        #self.SCOTCH_Graph = self.SCOTCH_graphAlloc()
+        self.graph = self.SCOTCH_Graph()
+        ret = self.SCOTCH_graphInit(self.graph)
         if(ret == 0):
             return True
         return False
 
     def buildSCOTCHGraphFromMetisGraph(self, metisGraph):
-        pass
         # TODO decide the format of metisGraph object
+        # TODO write test for this
+        pass
 
     def deleteSCOTCHGraph(self):
-        self.SCOTCH_graphExit(self.SCOTCH_Graph)
-        self.SCOTCH_Graph = None
+        # TODO write test for this
+        self.SCOTCH_graphExit(self.graph)
+        self.graph = None
 
     def scotchGraphValid(self):
-        ret = self.SCOTCH_graphCheck(self.SCOTCH_Graph)
+        # TODO write test for this
+        ret = self.SCOTCH_graphCheck(self.graph)
         if(ret == 0):
             return True
         return False
 
 
     def createSCOTCHGraphMapStrategy(self, strategyFlags):
-        self.SCOTCH_Strat = self.SCOTCH_stratAlloc()
-        ret = self.SCOTCH_stratInit(self.SCOTCH_Strat)
+        #self.strategy = self.SCOTCH_stratAlloc()
+        self.strategy = self.SCOTCH_Strat()
+        ret = self.SCOTCH_stratInit(self.strategy)
         if(ret == 0):
-            if(isinstance(strategyFlags, str) == False):
+            if(typeutils.isStr(strategyFlags) == False):
                 strategyFlags = ''
-            success = self.SCOTCH_stratGraphMap(self.SCOTCH_Strat, strategyFlags)
+            # Note: must encode the string as that returns a bytecode equivalent
+            success = self.SCOTCH_stratGraphMap(self.strategy, strategyFlags.encode('utf-8'))
+            if(success == 0):
+                return True
         return False
