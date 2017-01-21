@@ -26,6 +26,14 @@ def isFloat(arg, tryConvert = False):
     ''' Checks if argument is of float type '''
     return checkArgtypeConvert(arg, float, tryConvert)
 
+def toInt(arg, defaultVal = None):
+    try:
+        iarg = int(arg)
+        return iarg
+    except ValueError as err:
+        print(err)
+        return defaultVal
+
 '''
 def isInt(arg, tryConverting = True):
     if isinstance(arg, int):
