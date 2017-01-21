@@ -3,6 +3,8 @@ from ctypes import POINTER, c_int, c_double, c_void_p, c_char_p, cast
 from utilities.clibrary_loader import CLibrary
 import utilities.typeutils as typeutils
 
+import scotch.io as scotchio
+
 '''
 Notes about SCOTCH
 
@@ -187,10 +189,25 @@ class LibScotch:
             return True
         return False
 
-    def buildSCOTCHGraphFromMetisGraph(self, metisGraph):
-        # TODO decide the format of metisGraph object
-        # TODO write test for this
-        pass
+    def buildSCOTCHGraphFromData(self, scotchData):
+        if isinstance(scotchData, scotchio.ScotchGraphArrays) == False:
+            return False
+
+        if self.graph is None:
+            if(self.createSCOTCHGraph() == False):
+                return False
+
+        # graphBuild graph*, baseval, vertnbr, verttab, 0, velotab, 0, edgenbr, eddgetab, edlotab
+
+        success = self.SCOTCH_graphBuild(self.graph, 1, scotchData.vertnbr, scotchData.verttab.ctypes, None, scotchData.velotab.ctypes, None, scotchData.edgenbr, scotchData.edgetab.ctypes, scotchData.edlotab.ctypes)
+
+        if success == 0:
+            return True
+        return False
+
+
+
+
 
     def deleteSCOTCHGraph(self):
         # TODO write test for this

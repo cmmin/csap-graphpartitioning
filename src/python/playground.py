@@ -1,5 +1,6 @@
 import graphs.metisgraph as mg
-
+import scotch.io as sio
+from scotch.scotch import LibScotch
 
 if __name__ == '__main__':
     s = "101"
@@ -7,14 +8,11 @@ if __name__ == '__main__':
     path = '../../data/oneshot_fennel_weights.txt'
 
     graph = mg.MetisGraph(path)
-    graph.printData()
 
+    scotchArrays = sio.ScotchGraphArrays()
+    scotchArrays.fromMetisGraph(graph)
 
-    for vID in graph.vertices:
-        vertex = graph.vertices[vID]
-        vertex.printData(concise=False)
-        if vID > 10:
-            break
-        if vID == 1:
-            print(vertex.hasEdge(710))
-            print(graph.vertices[710].hasEdge(2))
+    sgraph = LibScotch("../../tools/scotch/lib/macOS/libscotch.dylib")
+
+    sgraph.createSCOTCHGraph()
+    print(sgraph.buildSCOTCHGraphFromData(scotchArrays))
