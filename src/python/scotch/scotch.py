@@ -149,6 +149,10 @@ class LibScotch:
         self.SCOTCH_graphMap = self.clib.library.SCOTCH_graphMap
         self.SCOTCH_graphMap.argtypes = [POINTER(self.SCOTCH_Graph), POINTER(self.SCOTCH_Arch), POINTER(self.SCOTCH_Strat), c_void_p]
 
+        self.SCOTCH_graphMapFixed = self.clib.library.SCOTCH_graphMapFixed
+        self.SCOTCH_graphMapFixed.argtypes = [POINTER(self.SCOTCH_Graph), POINTER(self.SCOTCH_Arch), POINTER(self.SCOTCH_Strat), c_void_p]
+
+
     def isLoaded(self):
         return self.clib.isLoaded()
 
@@ -204,14 +208,14 @@ class LibScotch:
 
         #print(scotchData.vertnbr)
         #print(len(scotchData.verttab)) #ok
-        print(scotchData.verttab) # ok
+        #print(scotchData.verttab) # ok
 
         #print(len(scotchData.velotab))
         #print(scotchData.velotab)
 
         #print(scotchData.edgenbr)
         #print(len(scotchData.edgetab))
-        print(scotchData.edgetab)
+        #print(scotchData.edgetab)
 
         success = self.SCOTCH_graphBuild(self.graph, 0, scotchData.vertnbr, scotchData._verttab.ctypes, 0, scotchData._velotab.ctypes, 0, scotchData.edgenbr, scotchData._edgetab.ctypes, scotchData._edlotab.ctypes)
 
@@ -271,6 +275,12 @@ class LibScotch:
     def graphMap(self, parttab):
 
         ret = self.SCOTCH_graphMap(self.graph, self.architecture, self.strategy, parttab.ctypes)
+        if ret == 0:
+            return True
+        return False
+
+    def graphMapFixed(self, parttab):
+        ret = self.SCOTCH_graphMapFixed(self.graph, self.architecture, self.strategy, parttab.ctypes)
         if ret == 0:
             return True
         return False

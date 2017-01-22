@@ -106,6 +106,13 @@ class ScotchGraphArrays:
         #print("Exporting Arrays for SCOTCH")
         self._exportArraysForSCOTCH()
 
+    def setFixedVertices(self, parttab):
+        if(len(parttab) == self.vertnbr):
+            self.parttab = parttab
+            self._parttab = self._exportToNumpyArray(parttab)
+            return True
+        return False
+
     def _exportArraysForSCOTCH(self):
         self._verttab = self._exportToNumpyArray(self.verttab)
         self._edgetab = self._exportToNumpyArray(self.edgetab)

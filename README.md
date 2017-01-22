@@ -1,7 +1,7 @@
 # SCOTCH Partitioning Algorithms
 
 - Author: 	Carlo Mattia Minciacchi
-- Email:		carlo.minciacchi@cantab.net 
+- Email:		carlo.minciacchi@cantab.net
 
 This document contains a brief guide to the repository and code within. It will be updated as the project progresses.
 
@@ -14,9 +14,9 @@ Project Aims
 Objectives
 
 - [x] Implement SCOTCH_graphMap() algorithm in C++
-- [] Implement SCOTCH_graphMapFixed() algorithm in C++
+- [x] Implement SCOTCH_graphMapFixed() algorithm in C++
+- [x] Port the algorithms to Python
 - [] Fully working alternative to fennel algorithm
-- [] Port the algorithms to Python
 - [] Integrate algorithms with the larger partitioning algorithm
 
 # Structure of Repository
@@ -72,7 +72,7 @@ Building the graph partitioner:
 ```
 $ ./build.sh -linux
 ```
- 
+
 Build options: ```-r``` runs the program after building. ```-c``` removes the program before re-building.
 
 ## Building on macOS
@@ -85,7 +85,7 @@ Building the graph partitioner:
 ```
 $ ./build.sh -osx
 ```
- 
+
 Build options: ```-r``` runs the program after building. ```-c``` removes the program before re-building.
 
 ## Running the Graph Partitioner
@@ -112,7 +112,7 @@ To update the visualisation to the latest data in ```data/oneshot_fennel_partiti
 ```
 $ cd src/python
 $ python3 run_metis_graph.py
-... generates .json file read 
+... generates .json file read
 by socialNetwork.html ...
 ```
 

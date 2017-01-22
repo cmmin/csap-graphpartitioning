@@ -39,32 +39,59 @@ mapper.graphMap()
 '''
 
 def partitionMetis(libraryPath, metisFilePath):
+    print("Loading METIS file:", metisFilePath)
     metisGraph = mg.MetisGraph(metisFilePath)
     metisGraph.printData()
 
+    print("Loading SCOTCH library:", libraryPath)
     scotchData = sio.ScotchGraphArrays()
     scotchData.fromMetisGraph(metisGraph)
 
+    print("Creating GraphMapper instance")
     mapper = GraphMapper(libraryPath)
     mapper.kbalval = 0.01
 
+    print("Intializing Architecture for GraphMap")
     ok = mapper.initArchitecture()
-    print("Architecture =", ok)
+    print("   Architecture =", ok)
 
+    print("Intializing Strategy for GraphMap")
     ok = mapper.initStrategy()
-    print("Strategy =", ok)
+    print("   Strategy =", ok)
 
+    print("Loading Graph for GraphMap")
     ok = mapper.loadGraph(scotchData)
-    print("Graph =", ok)
+    print("   Graph =", ok)
 
     #mapper.scotchData.debugPrint()
     if ok == False:
         return None
 
+    print("Running SCOTCH_graphMap()")
     ok = mapper.graphMap()
-    print("Mapped =", ok)
+    print("   Graph Mapped =", ok)
 
+    print("Vertex Partitions")
     print(mapper.scotchData._parttab)
+
+    print("Fixing first ten vertices")
+    mapper.scotchData.parttab = sio.genArray(mapper.scotchData.vertnbr, -1)
+    for i in range(0, 10):
+        mapper.scotchData.parttab[i] = i
+        print("  Fixing vertex", i + 1, "to partition with ID", i)
+    mapper.scotchData._parttab = mapper.scotchData._exportToNumpyArray(mapper.scotchData.parttab)
+
+    print("Input Vertex Partition IDs")
+    print(mapper.scotchData._parttab)
+
+
+    print("Running graphMapFixed with some fixed vertices")
+    ok = mapper.graphMapFixed()
+    print("   Graph Mapped Fixed =", ok)
+
+    print("New Vertex Partitions")
+    print(mapper.scotchData._parttab)
+
 
     return mapper
 
@@ -154,4 +181,9 @@ class GraphMapper:
             #return self.scotchLib.graphMap(arr)
 
             return self.scotchLib.graphMap(self.scotchData._parttab)
+        return False
+
+    def graphMapFixed(self):
+        if self.scotchLib.isLoaded():
+            return self.scotchLib.graphMapFixed(self.scotchData._parttab)
         return False
