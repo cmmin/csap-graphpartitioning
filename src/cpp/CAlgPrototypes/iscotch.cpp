@@ -94,6 +94,13 @@ bool graphBuild(SCOTCH_Graph * graph, METIS::MetisGraph *metisData)
   //int *vlbltab; // vertex label array
 
   int edgenbr = metisData->numEdges() * 2;
+
+  std::cout << edgenbr << std::endl;
+
+  for(int i = 0; i < edgenbr; i++) {
+    std::cout << *(metisData->edgetab + i) << ", ";
+  }
+
   //int *edgetab; // adjacency array = adjacency_list
   //int *edlotab; // arc load array = edge weights
 

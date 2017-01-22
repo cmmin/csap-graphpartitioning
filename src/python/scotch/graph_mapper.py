@@ -6,6 +6,13 @@ import scotch.io as sio
 
 import graphs.metisgraph as mg
 
+import ctypes
+
+
+# maybe, build the C++ version directly?
+# seems to crash on architecture
+
+
 '''
 Usage:
 
@@ -39,6 +46,8 @@ def partitionMetis(libraryPath, metisFilePath):
     scotchData.fromMetisGraph(metisGraph)
 
     mapper = GraphMapper(libraryPath)
+    mapper.kbalval = 0.01
+
     ok = mapper.initArchitecture()
     print("Architecture =", ok)
 
@@ -48,8 +57,14 @@ def partitionMetis(libraryPath, metisFilePath):
     ok = mapper.loadGraph(scotchData)
     print("Graph =", ok)
 
+    #mapper.scotchData.debugPrint()
+    if ok == False:
+        return None
+
     ok = mapper.graphMap()
     print("Mapped =", ok)
+
+    print(mapper.scotchData._parttab)
 
     return mapper
 
@@ -108,6 +123,7 @@ class GraphMapper:
             ok = self.scotchLib.setStrategyGraphMapBuild(self.strategyFlag, self.numPartitions, self.kbalval)
             if ok == False:
                 return False
+            return ok
             ok = self.scotchLib.setStrategyFlags(self.strategyOptions)
             if ok == False:
                 return False
@@ -121,12 +137,21 @@ class GraphMapper:
             self.scotchData = scotchData
 
         if self.scotchLib.isLoaded():
-            if self.scotchLib.createSCOTCHGraph():
-                if self.scotchLib.buildSCOTCHGraphFromData(self.scotchData):
-                    return True
+            ok = self.scotchLib.createSCOTCHGraph()
+            if ok == False:
+                return False
+            ok  = self.scotchLib.buildSCOTCHGraphFromData(self.scotchData)
+            if ok == False:
+                return False
+            ok = self.scotchLib.scotchGraphValid()
+            return ok
         return False
 
     def graphMap(self):
         if self.scotchLib.isLoaded():
-            return self.scotchLib.graphMap(self.scotchData.verttab)
+
+            #arr = (ctypes.c_int * 1000)(*self.scotchData.parttab)
+            #return self.scotchLib.graphMap(arr)
+
+            return self.scotchLib.graphMap(self.scotchData._parttab)
         return False

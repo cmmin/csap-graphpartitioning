@@ -142,8 +142,17 @@ class MetisVertex:
             return False
         else:
             return False
+
     def numEdges(self):
         return len(self.edges)
+
+    def edgeVertexIDs(self):
+        edgeIDs = []
+        for edgeKey in self.edges:
+            eID = self.edges[edgeKey].getOtherVertex(self.vertexID)
+            edgeIDs.append(eID)
+        edgeIDs.sort()
+        return edgeIDs
 
 class MetisGraph:
     def __init__(self, filePath = None):

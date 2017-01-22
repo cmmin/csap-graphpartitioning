@@ -201,7 +201,19 @@ class LibScotch:
 
         # graphBuild graph*, baseval, vertnbr, verttab, 0, velotab, 0, edgenbr, eddgetab, edlotab
 
-        success = self.SCOTCH_graphBuild(self.graph, 1, scotchData.vertnbr, scotchData.verttab.ctypes, None, scotchData.velotab.ctypes, None, scotchData.edgenbr, scotchData.edgetab.ctypes, scotchData.edlotab.ctypes)
+
+        #print(scotchData.vertnbr)
+        #print(len(scotchData.verttab)) #ok
+        print(scotchData.verttab) # ok
+
+        #print(len(scotchData.velotab))
+        #print(scotchData.velotab)
+
+        #print(scotchData.edgenbr)
+        #print(len(scotchData.edgetab))
+        print(scotchData.edgetab)
+
+        success = self.SCOTCH_graphBuild(self.graph, 0, scotchData.vertnbr, scotchData._verttab.ctypes, 0, scotchData._velotab.ctypes, 0, scotchData.edgenbr, scotchData._edgetab.ctypes, scotchData._edlotab.ctypes)
 
         if success == 0:
             return True
@@ -219,7 +231,6 @@ class LibScotch:
         if(ret == 0):
             return True
         return False
-
 
     def createStrategy(self):
         self.strategy = self.SCOTCH_Strat()
@@ -258,6 +269,7 @@ class LibScotch:
 
 
     def graphMap(self, parttab):
+
         ret = self.SCOTCH_graphMap(self.graph, self.architecture, self.strategy, parttab.ctypes)
         if ret == 0:
             return True

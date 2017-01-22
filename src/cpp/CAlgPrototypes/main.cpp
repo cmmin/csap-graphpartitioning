@@ -30,7 +30,7 @@ void compareFixedNotFixed();
 /**** MAIN ***/
 int main(int argc, char*argv[]) {
   try {
-    graphMapFixed();
+    graphMap();
   }
   catch (const std::exception &e) {
     std::cout << "EXCEPTION running graphMap(): " << e.what() << std::endl;
