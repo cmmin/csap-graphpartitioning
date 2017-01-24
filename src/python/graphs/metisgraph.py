@@ -4,6 +4,8 @@ from utilities.typeutils import isStr, toInt
 import os
 import os.path
 
+import networkx as nx
+
 #@noExceptPropagate
 def checkGraphFormatString(metisGraphFormatStr):
     if(isStr(metisGraphFormatStr) == False):
@@ -76,6 +78,9 @@ class MetisEdge:
 
     def getPair(self):
         return (self.u, self.v)
+
+    def getArrayPair(self):
+        return [self.u, self.v]
 
     def getKey(self):
         return str(self.u) + '_' + str(self.v)
@@ -192,6 +197,16 @@ class MetisGraph:
                 else:
                     self._parseVertexLine(line, lineNum)
                 lineNum += 1
+
+    def toNetworkxGraph(self):
+        G = nx.Graph()
+        G.add_nodes_from(list(self.vertices.keys()))
+        for vertexID in self.vertices:
+            vertex = self.vertices[vertexID]
+            for edgeID in vertex.edges:
+                edge = vertex.edges[edgeID]
+                G.add_edge(edge.u, edge.v)
+        return G
 
     def printData(self, concise = True):
         print('Vertices =', self.numVertices(), "Unique Edges =", self.numEdges())

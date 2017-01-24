@@ -1,6 +1,8 @@
 import numpy as np
 import graphs.metisgraph as mg
 
+import networkx as nx
+
 def genArray(n, defaultVal = 0):
     arr = []
     for i in range(0, n):
@@ -55,9 +57,67 @@ class ScotchGraphArrays:
         print(self.parttab)
 
 
+    def fromNetworkxGraph(self, nxGraph):
+        if isinstance(nxGraph, nx.Graph) == False:
+            print('Error, cannot load networkx graph from datatype', type(metisGraph).__name__)
+            return False
+
+        # number_of_nodes
+        # size() ? number of edges
+
+        self.vertnbr = nxGraph.number_of_nodes()
+        self.edgenbr = nxGraph.size() * 2
+        self.baseval = 1
+
+        self.verttab = genArray(nxGraph.number_of_nodes() + 1)
+        self.edgetab = genArray(nxGraph.size() * 2)
+
+        self.edlotab = genArray(nxGraph.size() * 2)
+        self.velotab = genArray(nxGraph.number_of_nodes())
+
+
+        self.parttab = genArray(nxGraph.number_of_nodes(), -1)
+
+
+        vtabID = 0
+        nodes = nxGraph.nodes()
+        for vertexID in range(1, len(nodes) + 1):
+            vertex = nodes[vertexID - 1]
+            adjustedID = vertexID - self.baseval
+
+            #vertex.printData(False)
+
+            self.verttab[adjustedID] = vtabID
+            self.velotab[adjustedID] = 1 # TODO vertex weights
+
+            indexedEdges = {}
+            #edgeIndeces = vertex.edgeVertexIDs()
+            edgeIndeces = nxGraph.neighbors(vertex)
+
+            '''
+            for edgeKey in vertex.edges:
+                edge = vertex.edges[edgeKey]
+                otherEdgeVertexID = edge.getOtherVertex(vertex.vertexID)
+
+                indexedEdges[otherEdgeVertexID] = edge
+            '''
+            edgeCount = 0
+            for edgeID in edgeIndeces:
+
+                self.edgetab[vtabID + edgeCount] = edgeID - self.baseval
+                self.edlotab[vtabID + edgeCount] = 1
+
+                edgeCount += 1
+            vtabID += len(edgeIndeces)
+
+        self.verttab[nxGraph.number_of_nodes()] = vtabID
+
+        #print("Exporting Arrays for SCOTCH")
+        self._exportArraysForSCOTCH()
+
     def fromMetisGraph(self, metisGraph):
         if isinstance(metisGraph, mg.MetisGraph) == False:
-            print('Error, cannot load data from datatype', type(metisGraph).__name__)
+            print('Error, cannot load metis graph from datatype', type(metisGraph).__name__)
             return False
 
         self.vertnbr = metisGraph.numVertices()
