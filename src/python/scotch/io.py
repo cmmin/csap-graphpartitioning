@@ -57,7 +57,7 @@ class ScotchGraphArrays:
         print(self.parttab)
 
 
-    def fromNetworkxGraph(self, nxGraph):
+    def fromNetworkxGraph(self, nxGraph, baseval=1):
         if isinstance(nxGraph, nx.Graph) == False:
             print('Error, cannot load networkx graph from datatype', type(metisGraph).__name__)
             return False
@@ -67,7 +67,7 @@ class ScotchGraphArrays:
 
         self.vertnbr = nxGraph.number_of_nodes()
         self.edgenbr = nxGraph.size() * 2
-        self.baseval = 1
+        self.baseval = baseval
 
         self.verttab = genArray(nxGraph.number_of_nodes() + 1)
         self.edgetab = genArray(nxGraph.size() * 2)
@@ -81,8 +81,8 @@ class ScotchGraphArrays:
 
         vtabID = 0
         nodes = nxGraph.nodes()
-        for vertexID in range(1, len(nodes) + 1):
-            vertex = nodes[vertexID - 1]
+        for vertexID in range(self.baseval, len(nodes) + self.baseval):
+            vertex = nodes[vertexID - self.baseval]
             adjustedID = vertexID - self.baseval
 
             #vertex.printData(False)

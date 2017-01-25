@@ -124,6 +124,33 @@ class GraphMapper:
             return False
         return False
 
+    def initialize(self, scotchArrayData, verbose=True):
+        if(verbose):
+            print("Intializing Architecture for GraphMap")
+
+        ok = self.initArchitecture()
+
+        if(verbose):
+            print("   Architecture =", ok)
+
+        if(verbose):
+            print("Intializing Strategy for GraphMap")
+
+        ok = self.initStrategy()
+
+        if(verbose):
+            print("   Strategy =", ok)
+
+        if(verbose):
+            print("Loading Graph for GraphMap")
+
+        ok = self.loadGraph(scotchArrayData)
+
+        if(verbose):
+            print("   Graph =", ok)
+
+        return ok
+
     def loadLibrary(self, scotchLibPath):
         lib = sl.LibScotch(self.scotchLibPath)
         if(lib.isLoaded()):

@@ -23,7 +23,7 @@ src/cpp/CAlgPrototypes/scotch
 *.dll
 *.exe
 *.o
-*.so
+#*.so
 *.pyc
 *.pem
 
