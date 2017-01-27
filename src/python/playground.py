@@ -8,11 +8,22 @@ import scotch.io as sio
 import networkx as nx
 import matplotlib.pyplot as plt
 
+import utilities.system_utils as sysutils
+
 if __name__ == '__main__':
     s = "101"
     #mg.checkGraphFormatString(s)
     metisPath = '../../data/oneshot_fennel_weights.txt'
-    scotchPath = "../../tools/scotch/lib/macOS/libscotch.dylib"
+    if sysutils.getOS() == sysutils.OS.macOS:
+        scotchPath = "../../tools/scotch/lib/macOS/libscotch.dylib"
+    if sysutils.getOS() == sysutils.OS.linux:
+        scotchPath = "/usr/local/lib/scotch/libscotch.so"
+        #scotchPath = "/home/voreno/Downloads/scotch_6.0.4/src/libscotch/libscotch.so"
+
+    import os
+    print(os.path.isfile(scotchPath))
+
+    print(scotchPath)
 
     metisG = mg.MetisGraph(metisPath)
     nxG = metisG.toNetworkxGraph()
@@ -22,10 +33,6 @@ if __name__ == '__main__':
 
     print(data.edgetab)
 
-    #print(nxG.nodes())
-    #print(nxG.edges())
-
-    exit()
     mapper = gm.partitionMetis(scotchPath, metisPath)
 
     exit()
