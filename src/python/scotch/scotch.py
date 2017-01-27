@@ -2,8 +2,13 @@ from ctypes import POINTER, c_int, c_double, c_void_p, c_char_p, cast
 
 from utilities.clibrary_loader import CLibrary
 import utilities.typeutils as typeutils
+import utilities.system_utils as sysutils
 
 import scotch.io as scotchio
+
+from pathlib import Path
+
+import os
 
 '''
 Notes about SCOTCH
@@ -60,6 +65,24 @@ SCOTCH_graphBuild
 SCOTCH_graphMap(graph *, arch *, strat *, parttab *)
 
 '''
+
+def defaultLibraryPath():
+    if sysutils.getOS() == sysutils.OS.macOS:
+        return os.path.join(str(Path(__file__).parents[3]), 'tools/scotch/lib/macOS/libscotch.dylib')
+    elif sysutils.getOS() == sysutils.OS.linux:
+        return '/usr/local/lib/scotch_604/libscotch.so'
+
+def testSetup(libraryPath):
+    if isinstance(libraryPath, str) == False:
+        return False
+    if os.path.isfile(libraryPath) == False:
+        return False
+
+    if sysutils.getOS() == sysutils.OS.macOS:
+        return libraryPath.endswith('.dylib')
+    elif sysutils.getOS() == sysutils.OS.linux:
+        return libraryPath.endswith('.so')
+
 
 
 class LibScotch:

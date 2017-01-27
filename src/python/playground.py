@@ -4,6 +4,7 @@ import graphs.hypergraph as hg
 import graphs.metisgraph as mg
 
 import scotch.io as sio
+import scotch.scotch as sct
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -11,7 +12,9 @@ import matplotlib.pyplot as plt
 import utilities.system_utils as sysutils
 
 if __name__ == '__main__':
-    s = "101"
+    lP = sct.defaultLibraryPath()
+    print(lP, sct.testSetup(lP))
+    exit()
     #mg.checkGraphFormatString(s)
     metisPath = '../../data/oneshot_fennel_weights.txt'
     if sysutils.getOS() == sysutils.OS.macOS:
