@@ -83,8 +83,6 @@ def testSetup(libraryPath):
     elif sysutils.getOS() == sysutils.OS.linux:
         return libraryPath.endswith('.so')
 
-
-
 class LibScotch:
     def __init__(self, libraryPath):
         self.clib = CLibrary(libraryPath)
@@ -162,6 +160,9 @@ class LibScotch:
         self.SCOTCH_stratInit = self.clib.library.SCOTCH_stratInit
         self.SCOTCH_stratInit.argtypes = [POINTER(self.SCOTCH_Strat)]
 
+        self.SCOTCH_stratExit = self.clib.library.SCOTCH_stratExit
+        self.SCOTCH_stratExit.argtypes = [POINTER(self.SCOTCH_Strat)]
+
         self.SCOTCH_stratGraphMap = self.clib.library.SCOTCH_stratGraphMap
         self.SCOTCH_stratGraphMap.argtypes = [POINTER(self.SCOTCH_Strat), c_char_p]
 
@@ -196,8 +197,14 @@ class LibScotch:
             return True
         return False
 
+    def deleteSCOTCHStrat(self):
+        self.SCOTCH_stratExit(self.strategy)
+        del self.strategy
+        self.strategy = None
+
     def deleteSCOTCHArch(self):
         self.SCOTCH_archExit(self.architecture)
+        del self.architecture
         self.architecture = None
 
     def populatePartitionArchitecture(self, numPartitions):
@@ -250,6 +257,7 @@ class LibScotch:
     def deleteSCOTCHGraph(self):
         # TODO write test for this
         self.SCOTCH_graphExit(self.graph)
+        del self.graph
         self.graph = None
 
     def scotchGraphValid(self):

@@ -106,6 +106,7 @@ class GraphMapper:
 
         self.scotchLibPath = scotchLibPath
 
+        # Optional Parameters
         self.numPartitions = numPartitions
         self.kbalval = kbalval
         self.strategyFlag = strategyFlag
@@ -152,12 +153,21 @@ class GraphMapper:
         return ok
 
     def loadLibrary(self, scotchLibPath):
-        lib = sl.LibScotch(self.scotchLibPath)
+        lib = sl.LibScotch(scotchLibPath)
         if(lib.isLoaded()):
             self.scotchLib = lib
             self.scotchLibPath = scotchLibPath
             return True
         return False
+
+    def delObjects(self):
+        if self.scotchLib.isLoaded():
+            self.scotchLib.deleteSCOTCHGraph()
+            self.scotchLib.deleteSCOTCHStrat()
+            self.scotchLib.deleteSCOTCHArch()
+        if self.scotchData is not None:
+            # clear arrays
+            self.scotchData.clearData()
 
     def initArchitecture(self):
         if self.scotchLib.isLoaded():

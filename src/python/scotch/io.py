@@ -16,9 +16,28 @@ def genArray(n, defaultVal = 0):
 # http://stackoverflow.com/questions/7543675/how-to-convert-pointer-to-c-array-to-python-array
 
 
-
 class ScotchGraphArrays:
     def __init__(self):
+        self.verttab = []
+        self.edgetab = []
+        self.edlotab = []
+        self.velotab = []
+        self.vertexweights = []
+        self.parttab = []
+
+        self._verttab = None
+        self._edgetab = None
+        self._edlotab = None
+        self._velotab = None
+        self._vertexweights = None
+        self._parttab = None
+
+
+        self.vertnbr = 0
+        self.edgenbr = 0
+        self.baseval = 0
+
+    def _initializeParams(self):
         self.verttab = []
         self.edgetab = []
         self.edlotab = []
@@ -56,8 +75,10 @@ class ScotchGraphArrays:
         print(len(self.parttab))
         print(self.parttab)
 
+    def clearData(self):
+        self._initializeParams()
 
-    def fromNetworkxGraph(self, nxGraph, baseval=1):
+    def fromNetworkxGraph(self, nxGraph, baseval=1, parttab=None):
         if isinstance(nxGraph, nx.Graph) == False:
             print('Error, cannot load networkx graph from datatype', type(metisGraph).__name__)
             return False
@@ -75,9 +96,13 @@ class ScotchGraphArrays:
         self.edlotab = genArray(nxGraph.size() * 2)
         self.velotab = genArray(nxGraph.number_of_nodes())
 
-
-        self.parttab = genArray(nxGraph.number_of_nodes(), -1)
-
+        if parttab is None:
+            self.parttab = genArray(nxGraph.number_of_nodes(), -1)
+        else:
+            if len(parttab) == self.vertnbr:
+                self.parttab = parttab
+            else:
+                self.parttab = genArray(nxGraph.number_of_nodes(), -1)
 
         vtabID = 0
         nodes = nxGraph.nodes()
@@ -88,31 +113,36 @@ class ScotchGraphArrays:
             #vertex.printData(False)
 
             self.verttab[adjustedID] = vtabID
-            self.velotab[adjustedID] = 1 # TODO vertex weights
+
+            vWeight = 1
+
+            try:
+                vWeight = nxGraph[vertex]['weight']
+            except KeyError as ke:
+                pass
+
+            self.velotab[adjustedID] = vWeight
 
             indexedEdges = {}
-            #edgeIndeces = vertex.edgeVertexIDs()
             edgeIndeces = nxGraph.neighbors(vertex)
 
-            '''
-            for edgeKey in vertex.edges:
-                edge = vertex.edges[edgeKey]
-                otherEdgeVertexID = edge.getOtherVertex(vertex.vertexID)
-
-                indexedEdges[otherEdgeVertexID] = edge
-            '''
             edgeCount = 0
             for edgeID in edgeIndeces:
 
+                edgeWeight = 1
+                try:
+                    edgeWeight = nxGraph[adjustedID][edgeID]['weight']
+                except Exception as e:
+                    edgeWeight = 1
+
                 self.edgetab[vtabID + edgeCount] = edgeID - self.baseval
-                self.edlotab[vtabID + edgeCount] = 1
+                self.edlotab[vtabID + edgeCount] = edgeWeight
 
                 edgeCount += 1
             vtabID += len(edgeIndeces)
 
         self.verttab[nxGraph.number_of_nodes()] = vtabID
 
-        #print("Exporting Arrays for SCOTCH")
         self._exportArraysForSCOTCH()
 
     def fromMetisGraph(self, metisGraph):

@@ -12,21 +12,24 @@ import matplotlib.pyplot as plt
 import utilities.system_utils as sysutils
 
 if __name__ == '__main__':
-    lP = sct.defaultLibraryPath()
-    print(lP, sct.testSetup(lP))
-    exit()
+    libraryPath = sct.defaultLibraryPath()
+    print(libraryPath, sct.testSetup(libraryPath))
+    #exit()
     #mg.checkGraphFormatString(s)
-    metisPath = '../../data/oneshot_fennel_weights.txt'
+    metisPath = 'csap-graphpartitioning/data/oneshot_fennel_weights.txt'
+    '''
     if sysutils.getOS() == sysutils.OS.macOS:
         scotchPath = "../../tools/scotch/lib/macOS/libscotch.dylib"
     if sysutils.getOS() == sysutils.OS.linux:
         scotchPath = "/usr/local/lib/scotch/libscotch.so"
         #scotchPath = "/home/voreno/Downloads/scotch_6.0.4/src/libscotch/libscotch.so"
-
+    '''
     import os
-    print(os.path.isfile(scotchPath))
+    #print(os.path.isfile(scotchPath), scotchPath)
 
-    print(scotchPath)
+    print(os.path.isfile(metisPath), metisPath)
+    print(os.getcwd())
+    metisPath
 
     metisG = mg.MetisGraph(metisPath)
     nxG = metisG.toNetworkxGraph()
@@ -34,16 +37,14 @@ if __name__ == '__main__':
     data = sio.ScotchGraphArrays();
     data.fromNetworkxGraph(nxG)
 
-    print(data.edgetab)
+    #mapper = gm.partitionMetis(libraryPath, metisPath)
+    mapper = gm.GraphMapper(scotchLibPath = libraryPath, numPartitions = 4)
+    mapper.initialize(data)
+    ok = mapper.graphMap()
 
-    mapper = gm.partitionMetis(scotchPath, metisPath)
+    data.debugPrint()
+    print(ok, mapper.scotchData._parttab)
 
-    exit()
-    g, vertices = hg.hyperToGraph()
+    mapper.delObjects()
 
-    labels = {}
-    for node in g.nodes():
-        labels[node] = str(node)
-    nx.draw(g, labels=labels)
-    plt.savefig("g.png")
-    hg.graphToHypergraph(g)
+    print(mapper.scotchLib.architecture)
