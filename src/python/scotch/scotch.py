@@ -247,7 +247,11 @@ class LibScotch:
         #print(len(scotchData.edgetab))
         #print(scotchData.edgetab)
 
-        success = self.SCOTCH_graphBuild(self.graph, 0, scotchData.vertnbr, scotchData._verttab.ctypes, 0, scotchData._velotab.ctypes, 0, scotchData.edgenbr, scotchData._edgetab.ctypes, scotchData._edlotab.ctypes)
+        if scotchData._vlbltab is None:
+            success = self.SCOTCH_graphBuild(self.graph, scotchData.baseval, scotchData.vertnbr, scotchData._verttab.ctypes, 0, scotchData._velotab.ctypes, 0, scotchData.edgenbr, scotchData._edgetab.ctypes, scotchData._edlotab.ctypes)
+        else:
+            #print('SCOTCH.py, using vlbltab array')
+            success = self.SCOTCH_graphBuild(self.graph, scotchData.baseval, scotchData.vertnbr, scotchData._verttab.ctypes, 0, scotchData._velotab.ctypes, scotchData._vlbltab.ctypes, scotchData.edgenbr, scotchData._edgetab.ctypes, scotchData._edlotab.ctypes)
 
         if success == 0:
             return True

@@ -96,8 +96,14 @@ def partitionMetis(libraryPath, metisFilePath):
     return mapper
 
 
-def isValidScotchData(data):
+def isScotchData(data):
     return isinstance(data, sio.ScotchGraphArrays)
+
+def isValidScotchData(data):
+    if isScotchData(data) == False:
+        return False
+
+    return data.isValid()
 
 class GraphMapper:
     def __init__(self, scotchLibPath = None, numPartitions = 10, kbalval = 0.1, strategyFlag = 1, strategyOptions = ''):
@@ -125,7 +131,7 @@ class GraphMapper:
             return False
         return False
 
-    def initialize(self, scotchArrayData, verbose=True):
+    def initialize(self, scotchArrayData, verbose=True, skipGraphValidStep=False):
         if(verbose):
             print("Intializing Architecture for GraphMap")
 
@@ -145,7 +151,7 @@ class GraphMapper:
         if(verbose):
             print("Loading Graph for GraphMap")
 
-        ok = self.loadGraph(scotchArrayData)
+        ok = self.loadGraph(scotchArrayData, skipGraphValidStep=skipGraphValidStep)
 
         if(verbose):
             print("   Graph =", ok)
@@ -194,8 +200,9 @@ class GraphMapper:
             return True
         return False
 
-    def loadGraph(self, scotchData):
+    def loadGraph(self, scotchData, skipGraphValidStep = False):
         if isValidScotchData(scotchData) == False:
+            print("loadGraph: not Valid Scotch Data")
             return False
         else:
             self.scotchData = scotchData
@@ -203,11 +210,19 @@ class GraphMapper:
         if self.scotchLib.isLoaded():
             ok = self.scotchLib.createSCOTCHGraph()
             if ok == False:
+                print("loadGraph: cannot createSCOTCHGraph")
                 return False
             ok  = self.scotchLib.buildSCOTCHGraphFromData(self.scotchData)
             if ok == False:
+                print("loadGraph: cannot buildSCOTCHGraphFromData")
                 return False
+
+            if skipGraphValidStep == True:
+                return ok
+
             ok = self.scotchLib.scotchGraphValid()
+            if ok == False:
+                print("loadGraph: scotchGraphValid returned false")
             return ok
         return False
 

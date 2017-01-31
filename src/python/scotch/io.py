@@ -22,6 +22,7 @@ class ScotchGraphArrays:
         self.edgetab = []
         self.edlotab = []
         self.velotab = []
+        self.vlbltab = []
         self.vertexweights = []
         self.parttab = []
 
@@ -29,6 +30,7 @@ class ScotchGraphArrays:
         self._edgetab = None
         self._edlotab = None
         self._velotab = None
+        self._vlbltab = None
         self._vertexweights = None
         self._parttab = None
 
@@ -42,6 +44,7 @@ class ScotchGraphArrays:
         self.edgetab = []
         self.edlotab = []
         self.velotab = []
+        self.vlbltab = []
         self.vertexweights = []
         self.parttab = []
 
@@ -49,6 +52,7 @@ class ScotchGraphArrays:
         self._edgetab = None
         self._edlotab = None
         self._velotab = None
+        self._vlbltab = None
         self._vertexweights = None
         self._parttab = None
 
@@ -58,27 +62,51 @@ class ScotchGraphArrays:
         self.baseval = 0
 
     def debugPrint(self):
-        print(self.vertnbr)
-        print(self.edgenbr)
-        print(self.baseval)
+        print('vertnbr', self.vertnbr)
+        print('edgenbr', self.edgenbr)
+        print('baseval', self.baseval)
 
-        print(len(self.verttab))
-        print(self.verttab)
-        print(len(self.edgetab))
-        print(self.edgetab)
-        print(len(self.edlotab))
-        print(self.edlotab)
-        print(len(self.velotab))
-        print(self.velotab)
-        print(len(self.vertexweights))
-        print(self.vertexweights)
-        print(len(self.parttab))
-        print(self.parttab)
+        print('len verttab', len(self.verttab))
+        print('verttab', self.verttab)
+        print('len velotab', len(self.velotab))
+        print('velotab', self.velotab)
+        print('len vlbltab', len(self.vlbltab))
+        print('vlbltab', self.vlbltab)
+        print('len vertweights', len(self.vertexweights))
+        print('vertweights', self.vertexweights)
+
+        print('len edgetab', len(self.edgetab))
+        print('edgetab', self.edgetab)
+        print('len edlotab', len(self.edlotab))
+        print('edlotab', self.edlotab)
+
+        print('len parttab', len(self.parttab))
+        print('parttab', self.parttab)
+
+    def isValid(self):
+        # TODO complete this
+        if self.vertnbr + 1 != len(self._verttab):
+            return False
+        if self.vertnbr != len(self._velotab):
+            return False
+        if self.edgenbr != len(self._edgetab):
+            return False
+        if self.edgenbr != len(self._edlotab):
+            return False
+
+        # deep check
+        for edgeID in self._edgetab:
+            if edgeID not in self.vlbltab:
+                print('EdgeID not in vlbltab', edgeID)
+                return False
+
+        return True
+
 
     def clearData(self):
         self._initializeParams()
 
-    def fromNetworkxGraph(self, nxGraph, baseval=1, parttab=None):
+    def fromNetworkxGraph(self, nxGraph, baseval=1, parttab=None, vlbltab=None):
         if isinstance(nxGraph, nx.Graph) == False:
             print('Error, cannot load networkx graph from datatype', type(metisGraph).__name__)
             return False
@@ -96,6 +124,17 @@ class ScotchGraphArrays:
         self.edlotab = genArray(nxGraph.size() * 2)
         self.velotab = genArray(nxGraph.number_of_nodes())
 
+
+        if(vlbltab is None):
+            self.vlbltab = genArray(nxGraph.number_of_nodes())
+            #self.vlbltab = []
+        else:
+            if len(vlbltab) == self.vertnbr:
+                self.vlbltab = vlbltab
+            else:
+                self.vlbltab = genArray(nxGraph.number_of_nodes())
+
+
         if parttab is None:
             self.parttab = genArray(nxGraph.number_of_nodes(), -1)
         else:
@@ -106,10 +145,14 @@ class ScotchGraphArrays:
 
         vtabID = 0
         nodes = nxGraph.nodes()
+
+        vertCount = 0
         for vertexID in range(self.baseval, len(nodes) + self.baseval):
             vertex = nodes[vertexID - self.baseval]
             adjustedID = vertexID - self.baseval
 
+            self.vlbltab[vertCount] = nodes[vertexID - self.baseval] # store the lable for this vertex as vertCount != adjustID
+            vertCount += 1
             #vertex.printData(False)
 
             self.verttab[adjustedID] = vtabID
@@ -117,7 +160,7 @@ class ScotchGraphArrays:
             vWeight = 1
 
             try:
-                vWeight = nxGraph[vertex]['weight']
+                vWeight = nxGraph.node[vertex]['weight']
             except KeyError as ke:
                 pass
 
@@ -138,10 +181,23 @@ class ScotchGraphArrays:
                 self.edgetab[vtabID + edgeCount] = edgeID - self.baseval
                 self.edlotab[vtabID + edgeCount] = edgeWeight
 
+                #print('edge:', vertex, edgeID - self.baseval)
+
                 edgeCount += 1
             vtabID += len(edgeIndeces)
 
         self.verttab[nxGraph.number_of_nodes()] = vtabID
+
+        # update vertex IDs
+        updateEdgeIDSUsingLabels = False
+        if updateEdgeIDSUsingLabels:
+            lblmap = {}
+            for newVertID in range(0, len(self.vlbltab)):
+                oldVertID = self.vlbltab[newVertID]
+                lblmap[oldVertID] = newVertID
+            for i in range(0, len(self.edgetab)):
+                newVal = lblmap[self.edgetab[i]]
+                self.edgetab[i] = newVal
 
         self._exportArraysForSCOTCH()
 
@@ -210,6 +266,8 @@ class ScotchGraphArrays:
         self._velotab = self._exportToNumpyArray(self.velotab)
         self._parttab = self._exportToNumpyArray(self.parttab)
         self._vertexweights = self._exportToNumpyArray(self.vertexweights)
+        if(len(self.vlbltab) == self.vertnbr):
+            self._vlbltab = self._exportToNumpyArray(self.vlbltab)
 
     def _exportToNumpyArray(self, array):
         return np.asanyarray(array, dtype=np.int32)
