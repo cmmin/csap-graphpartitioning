@@ -160,21 +160,21 @@ class ScotchGraphArrays:
             vWeight = 1
 
             try:
-                vWeight = nxGraph.node[vertex]['weight']
+                vWeight = int(nxGraph.node[vertex]['weight'])
             except KeyError as ke:
                 pass
 
             self.velotab[adjustedID] = vWeight
 
             indexedEdges = {}
-            edgeIndeces = nxGraph.neighbors(vertex)
+            edgeIndeces = sorted(nxGraph.neighbors(vertex))
 
             edgeCount = 0
             for edgeID in edgeIndeces:
 
                 edgeWeight = 1
                 try:
-                    edgeWeight = nxGraph[adjustedID][edgeID]['weight']
+                    edgeWeight = int(nxGraph[adjustedID][edgeID]['weight'])
                 except Exception as e:
                     edgeWeight = 1
 

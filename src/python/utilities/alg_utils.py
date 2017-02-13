@@ -61,7 +61,7 @@ def minPartitionCounts(assignments, num_partitions):
     if minCountPartition < 0:
         minCountPartition = pickRandPartition(num_partitions)
 
-    return minCountPartition
+    return (minCountPartition, partitions)
 
 def updateNodeMapping(G, otherG = None):
     G2 = nx.Graph()
