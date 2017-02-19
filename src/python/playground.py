@@ -18,6 +18,8 @@ if __name__ == '__main__':
     print(libPath)
     patoh = pat.LibPatoh(libPath)
     print(patoh.version())
+    params = patoh.initializeParameters()
+    print(params)
 
     exit()
     libraryPath = sct.defaultLibraryPath()
