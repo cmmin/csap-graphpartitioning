@@ -11,7 +11,15 @@ import matplotlib.pyplot as plt
 
 import utilities.system_utils as sysutils
 
+import patoh.patoh as pat
+
 if __name__ == '__main__':
+    libPath = pat.defaultLibraryPath()
+    print(libPath)
+    patoh = pat.LibPatoh(libPath)
+    #print(patoh.version())
+
+    exit()
     libraryPath = sct.defaultLibraryPath()
     print(libraryPath, sct.testSetup(libraryPath))
     #exit()
