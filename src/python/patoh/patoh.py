@@ -15,6 +15,7 @@ def defaultLibraryPath():
         return os.path.join(str(Path(__file__).parents[3]), 'tools/patoh/lib/macOS/libpatoh.dylib')
     elif sysutils.getOS() == sysutils.OS.linux:
         #return '/usr/local/lib/scotch_604/libscotch.so'
+        return os.path.join(str(Path(__file__).parents[3]), 'tools/patoh/lib/linux/libpatoh.so')
         return ''
 
 class LibPatoh:

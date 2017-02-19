@@ -1,1 +1,1 @@
-g++ -fPIC -shared -Llinux/ -lpatoh -lm patoh_wrapper.cpp -o ../lib/linux/libpatoh.so
+g++ -Wall -fPIC -shared patoh_wrapper.cpp -Llinux/ -lpatoh -lm  -o ../lib/linux/libpatoh.so
