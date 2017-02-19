@@ -1,4 +1,6 @@
-from ctypes import POINTER, c_int, c_double, c_void_p, c_char_p, cast
+#from ctypes import POINTER, c_int, c_double, c_void_p, c_char_p, cast
+import ctypes
+
 
 from utilities.clibrary_loader import CLibrary
 import utilities.typeutils as typeutils
@@ -10,7 +12,7 @@ import os
 
 def defaultLibraryPath():
     if sysutils.getOS() == sysutils.OS.macOS:
-        return os.path.join(str(Path(__file__).parents[3]), 'tools/patoh/lib/macOS/libpatoh.a')
+        return os.path.join(str(Path(__file__).parents[3]), 'tools/patoh/lib/macOS/libpatoh.dylib')
     elif sysutils.getOS() == sysutils.OS.linux:
         #return '/usr/local/lib/scotch_604/libscotch.so'
         return ''
@@ -24,8 +26,10 @@ class LibPatoh:
         self.clib.load()
 
 
-        #self.PATOH_version = self.clib.PaToH_VersionStr
-        #self.PATOH_version.restype = c_char_p
+        self.PATOH_version = self.clib.library.Patoh_VersionStr
+        self.PATOH_version.restype = (ctypes.c_char_p)
+
+        self.clib.library.free.argtypes = (ctypes.c_void_p,)
 
     def version(self):
-        return self.PATOH_version().value
+        return self.PATOH_version().decode('utf-8')

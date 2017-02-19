@@ -17,7 +17,7 @@ if __name__ == '__main__':
     libPath = pat.defaultLibraryPath()
     print(libPath)
     patoh = pat.LibPatoh(libPath)
-    #print(patoh.version())
+    print(patoh.version())
 
     exit()
     libraryPath = sct.defaultLibraryPath()
